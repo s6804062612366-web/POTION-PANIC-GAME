@@ -37,3 +37,11 @@ replay_pid*
 .settings/
 .project
 .classpath
+
+# Project Report Documents, Images & Scripts (Local only)
+report_images/
+scratch/
+*.doc
+*.docx
+*.py
+
