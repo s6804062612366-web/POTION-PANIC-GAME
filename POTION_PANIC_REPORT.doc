@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>POTION PANIC - รายงานฉบับสมบูรณ์ (Final Project Report)</title>
+<!--[if gte mso 9]>
+<xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+        mso-header-margin: 1.25cm;
+        mso-footer-margin: 1.25cm;
+    }
+    body {
+        font-family: 'TH Sarabun New', 'Angsana New', 'Cordia New', Tahoma, sans-serif;
+        font-size: 16pt;
+        line-height: 1.35;
+        color: #111111;
+        background-color: #FFFFFF;
+    }
+    h1.chapter-title {
+        font-size: 22pt;
+        font-weight: bold;
+        color: #1a365d;
+        border-bottom: 2pt solid #2b6cb0;
+        padding-bottom: 4pt;
+        margin-top: 24pt;
+        margin-bottom: 12pt;
+        page-break-after: avoid;
+    }
+    h2.sub-chapter {
+        font-size: 18pt;
+        font-weight: bold;
+        color: #2c5282;
+        margin-top: 16pt;
+        margin-bottom: 8pt;
+        page-break-after: avoid;
+    }
+    h3.section-title {
+        font-size: 17pt;
+        font-weight: bold;
+        color: #2b6cb0;
+        margin-top: 14pt;
+        margin-bottom: 6pt;
+        page-break-after: avoid;
+    }
+    h4.subsection-title {
+        font-size: 16pt;
+        font-weight: bold;
+        color: #4a5568;
+        margin-top: 10pt;
+        margin-bottom: 4pt;
+        page-break-after: avoid;
+    }
+    p.normal-para {
+        font-size: 16pt;
+        margin-top: 3pt;
+        margin-bottom: 6pt;
+        text-align: justify;
+    }
+    li.bullet-item, li.numbered-item {
+        font-size: 16pt;
+        margin-left: 20pt;
+        margin-bottom: 3pt;
+    }
+    table.report-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10pt;
+        margin-bottom: 14pt;
+        font-size: 14pt;
+    }
+    table.report-table th {
+        background-color: #ebf8ff;
+        color: #2b6cb0;
+        border: 1pt solid #cbd5e0;
+        padding: 6pt 8pt;
+        font-weight: bold;
+        text-align: left;
+    }
+    table.report-table td {
+        border: 1pt solid #cbd5e0;
+        padding: 6pt 8pt;
+    }
+    pre.code-block {
+        background-color: #f7fafc;
+        border: 1pt solid #e2e8f0;
+        border-left: 4pt solid #3182ce;
+        padding: 8pt 10pt;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 11pt;
+        line-height: 1.25;
+        color: #2d3748;
+        margin-top: 8pt;
+        margin-bottom: 10pt;
+        overflow-x: auto;
+    }
+    code.inline-code {
+        background-color: #edf2f7;
+        color: #c53030;
+        font-family: 'Consolas', monospace;
+        font-size: 12pt;
+        padding: 1pt 3pt;
+        border-radius: 3pt;
+    }
+    div.callout-box {
+        background-color: #fffaf0;
+        border: 1.5pt solid #dd6b20;
+        border-radius: 4pt;
+        padding: 8pt 12pt;
+        margin-top: 8pt;
+        margin-bottom: 12pt;
+        color: #7b341e;
+        font-size: 15pt;
+    }
+    hr.divider {
+        border: 0;
+        height: 1pt;
+        background-color: #cbd5e0;
+        margin: 16pt 0;
+    }
+</style>
+</head>
+<body>
+<h1 class="chapter-title">รายงานฉบับสมบูรณ์ (Final Project Report)</h1>
+<h2 class="sub-chapter">วิชา การเขียนโปรแกรมเชิงวัตถุ (Object-Oriented Programming)</h2>
+<hr class="divider"/>
+<h3 class="section-title">- ชื่อ Project</h3>
+<p class="normal-para"><b>POTION PANIC (อลวนคนปรุงยา)</b>  </p>
+<p class="normal-para"><i>A 2D Real-Time Crafting &amp; Tower Defense Strategy Game</i></p>
+<p class="normal-para"><b>ข้อมูลผู้จัดทำ:</b>  </p>
+<li class="bullet-item"><b>ชื่อ-นามสกุล:</b> นายปภาวิน โกการัตน์  </li>
+<li class="bullet-item"><b>รหัสนักศึกษา:</b> 6804062612366  </li>
+<li class="bullet-item"><b>ตอนเรียน (Section):</b> 3  </li>
+<li class="bullet-item"><b>สาขาวิชา:</b> วิทยาการคอมพิวเตอร์ / เทคโนโลยีสารสนเทศ  </li>
+<li class="bullet-item"><b>สถาบัน:</b> มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ (KMUTNB)  </li>
+<li class="bullet-item"><b>ลิงก์คลังโค้ด (GitHub Repository):</b> https://github.com/s6804062612366-web/POTION-PANIC-GAME  </li>
+<hr class="divider"/>
+<h1 class="chapter-title">บทที่ 1: บทนำ</h1>
+<h3 class="section-title">1.1 ที่มาและความสำคัญของโปรเจ็ค</h3>
+<p class="normal-para">ในยุคปัจจุบัน วิดีโอเกมไม่ได้เป็นเพียงสื่อเพื่อความบันเทิงเท่านั้น แต่ยังเป็นเครื่องมือสำคัญในการฝึกทักษะการคิดวิเคราะห์ การตัดสินใจภายใต้สถานการณ์กดดัน และการทำงานแบบคู่ขนาน (Multitasking) อีกทั้งในการศึกษาวิทยาการคอมพิวเตอร์ การพัฒนาเกมยังเป็นแบบฝึกหัดที่ยอดเยี่ยมและท้าทายที่สุดในการประยุกต์ใช้แนวคิด <b>การเขียนโปรแกรมเชิงวัตถุ (Object-Oriented Programming: OOP)</b> เนื่องจากระบบเกมจำเป็นต้องมีการจำลองวัตถุที่มีสถานะ (State) และพฤติกรรม (Behavior) จำนวนมากที่ต้องปฏิสัมพันธ์กันตลอดเวลาในทุกๆ เสี้ยววินาที (Game Loop)</p>
+<p class="normal-para">โครงการ <b>POTION PANIC (อลวนคนปรุงยา)</b> ได้รับแรงบันดาลใจจากการผสมผสานจุดเด่นของเกม 2 รูปแบบเข้าด้วยกัน คือ เกมแนวจัดการทรัพยากรและปรุงอาหาร (Time-Management &amp; Crafting) เช่น <i>Overcooked</i> เข้ากับเกมแนวป้องกันฐาน (Tower Defense) โดยผู้เล่นจะได้รับบทบาทเป็น &quot;ศิษย์ฝึกหัดนักปรุงยา&quot; ผู้ต้องเข้าเวรเฝ้าหอคอยเวทมนตร์ยามค่ำคืน แต่เกิดเหตุการณ์ประตูมิติโบราณเปิดออก ทำให้ฝูงมอนสเตอร์หลากธาตุบุกทะลักเข้ามา ขณะเดียวกันสายพานลำเลียงวัตถุดิบใต้ดินเกิดขัดข้องและส่งสมุนไพรแร่ธาตุขึ้นมาอย่างต่อเนื่อง ผู้เล่นจึงต้องใช้ความจำ ไหวพริบ และความรวดเร็วในการผสมวัตถุดิบ 3 ชิ้นตามตำราเวทมนตร์ เพื่อสกัดกั้นและทำลายมอนสเตอร์รวมถึงบอสใหญ่ก่อนที่หอคอยจะพังทลาย</p>
+<p class="normal-para">โครงงานนี้จึงถูกสร้างขึ้นเพื่อเป็นเครื่องพิสูจน์การนำทฤษฎี OOP ทั้ง 4 เสาหลัก (Encapsulation, Inheritance, Polymorphism, Abstraction) และ Design Patterns มาประยุกต์สร้างเป็นซอฟต์แวร์เกมที่ทำงานได้จริงอย่างสมบูรณ์ ลื่นไหล และมีสุนทรียภาพ</p>
+<hr class="divider"/>
+<h3 class="section-title">1.2 ประเภทของโครงการ</h3>
+<li class="bullet-item"><b>ประเภทซอฟต์แวร์:</b> ซอฟต์แวร์เกมเดสก์ท็อป 2 มิติ (2D Standalone Desktop Application)</li>
+<li class="bullet-item"><b>ภาษาโปรแกรมหลัก:</b> ภาษา <b>Java (JDK 21)</b></li>
+<li class="bullet-item"><b>ชุดเครื่องมือกราฟิกและอินเทอร์เฟซ (GUI):</b> <b>Java Swing &amp; Java AWT (Graphics2D Hybrid Engine)</b></li>
+<li class="bullet-item"><b>ระบบสถาปัตยกรรมสินทรัพย์ดิจิทัล (Asset Pipeline):</b> ทรัพยากรภาพความละเอียดสูง 2D Cel-Shaded (<code class="inline-code">AssetLoader</code>) ควบคู่กับระบบสำรองเวกเตอร์เรขาคณิต (<code class="inline-code">VectorArtRenderer</code>)</li>
+<li class="bullet-item"><b>ระบบเสียงดนตรีประกอบ:</b> เครื่องยนต์สังเคราะห์คลื่นเสียง 16-bit หลายแทร็กโพลีโฟนิก (<code class="inline-code">SoundManager Polyphonic Synthesizer Engine</code>)</li>
+<li class="bullet-item"><b>การจัดการโครงการและบิลด์:</b> <b>Apache Maven</b></li>
+<li class="bullet-item"><b>ระบบควบคุมเวอร์ชัน:</b> <b>Git &amp; GitHub</b></li>
+<hr class="divider"/>
+<h3 class="section-title">1.3 ประโยชน์</h3>
+<li class="numbered-item" value="1"><b>ฝึกทักษะการแยกประสาทและการทำงานหลายอย่างพร้อมกัน (Multitasking Skills):</b> ผู้เล่นต้องสังเกตสายพานวัตถุดิบ กดเลือกวัตถุดิบลงหม้อต้ม ควบคุมการผสมยา และใช้เมาส์เล็งปาขวดยาใส่ศัตรูไปพร้อมกันในแบบเรียลไทม์</li>
+<li class="numbered-item" value="2"><b>พัฒนาทักษะการคิดวิเคราะห์และการวางแผนเชิงกลยุทธ์ (Strategic Thinking):</b> ผู้เล่นต้องวิเคราะห์จุดอ่อนของมอนสเตอร์แต่ละประเภทอย่างเฉียบขาด และตัดสินใจเลือกผสมยาชนิดที่เหมาะสมเพื่อสร้างความเสียหายสูงสุด (Critical Hit 2.5 เท่า)</li>
+<li class="numbered-item" value="3"><b>ฝึกความจำและการตอบสนองอย่างรวดเร็ว (Memory &amp; Reflexes):</b> ผู้เล่นต้องจดจำสูตรการปรุงยาตำรา 3 วัตถุดิบ (2 ฐาน + 1 ตัวเร่ง หรือ ผสม 3 ธาตุ) ผ่านสมการไอคอนภาพ และตอบสนองต่อคลื่นศัตรูที่เคลื่อนที่เร็ว</li>
+<li class="numbered-item" value="4"><b>ความบันเทิงและสุนทรียภาพทางศิลปะ (Aesthetic &amp; Game Feel):</b> นำเสนองานศิลปะแฟนตาซี 2 มิติโทนอบอุ่น ระบบอนิเมชันพาราโบลา ละอองฟิสิกส์ และระบบเสียงดนตรีประกอบที่ช่วยผ่อนคลายและสร้างความตื่นเต้น</li>
+<li class="numbered-item" value="5"><b>ประโยชน์เชิงวิชาการ:</b> เป็นตัวอย่างการประยุกต์ใช้แนวคิด OOP ขั้นสูงเข้ากับระบบซอฟต์แวร์จริง เช่น การจัดการหน่วยความจำ, Game Loop, Event Dispatch Thread, และการออกแบบสถาปัตยกรรมแบบ Modular</li>
+<hr class="divider"/>
+<h3 class="section-title">1.4 ขอบเขตของโครงการ (แนบ Proposal)</h3>
+<div class="callout-box"><b>[ส่วนสำหรับแนบเอกสารข้อเสนอโครงการ (Proposal) ฉบับจริง]</b></div>
+<div class="callout-box"><i>สามารถคัดลอกข้อความ Proposal ดั้งเดิมที่เคยเสนออาจารย์ในชั้นเรียนมาวางทับในกรอบนี้ได้ หรือใช้ข้อกำหนดขอบเขตโครงการฉบับสมบูรณ์ด้านล่างนี้:</i></div>
+<p class="normal-para">โครงการได้กำหนดขอบเขตของการพัฒนาทั้งในเชิงระบบและเชิงเนื้อหาไว้ดังนี้:</p>
+<li class="numbered-item" value="1"><b>ขอบเขตด้านระบบเกมเพลย์ (Core Gameplay Loop):</b></li>
+<li class="bullet-item"><b>ระบบสายพานลำเลียง (Conveyor Belt):</b> มี 5 ช่องวัตถุดิบ พร้อมระบบสุ่มอัจฉริยะตามภัยคุกคาม (Smart Threat-Aware Spawning System) และปุ่ม Reroll สุ่มใหม่ทั้งสายพาน (กด [F]) คูลดาวน์ 1.0 วินาที</li>
+<li class="bullet-item"><b>ระบบหม้อปรุงยา 3 วัตถุดิบ (3-Ingredient Cauldron):</b> ผสมวัตถุดิบ 3 ชิ้น พร้อมระบบคาถาชี้แนะอัจฉริยะ (Smart Recipe Helper) แสดงผลลัพธ์ที่จะได้เมื่อใส่ของครบ 2 ชิ้น</li>
+<li class="bullet-item"><b>ระบบแท่นพักขวดยา (Potion Rack):</b> เก็บขวดยาพร้อมใช้ได้ 4 ช่อง พร้อมคีย์ลัด [Q], [W], [E], [R] และระบบ Auto-Select ขวดยาใบใหม่ทันที</li>
+<li class="bullet-item"><b>ระบบหอคอยเวทมนตร์ (Magic Tower):</b> มีพลังชีวิตสูงสุด 100 HP พร้อมระบบเตือนภัยหน้าจอสั่นสะเทือนเมื่อเข้าสู่สภาวะวิกฤต (เลือด &lt; 35%) และเสียงไซเรนเตือนภัย</li>
+<li class="bullet-item"><b>ระบบเอฟเฟกต์ภาพและฟิสิกส์ (Visual Effects Engine):</b> วิถีขวดยาโค้งพาราโบลาพร้อมหางละอองเวทมนตร์ตามธาตุ (Particle Trail), ออร่าเรืองแสง, วงแหวนล็อกเป้าหมาย (Target Ring), และเอฟเฟกต์การระเบิดเฉพาะธาตุ 5 ชนิด</li>
+<li class="numbered-item" value="2"><b>ขอบเขตด้านเนื้อหาและการดำเนินเรื่อง (Content &amp; Stages):</b></li>
+<li class="bullet-item"><b>ด่านการเล่น 4 ด่าน (3 ด่านเนื้อเรื่อง + 1 ด่าน Endless):</b></li>
+<li class="bullet-item"><i>ด่านที่ 1 (Apprentice):</i> วัตถุดิบ 2 ชนิด เรียนรู้ธาตุไฟและน้ำแข็ง</li>
+<li class="bullet-item"><i>ด่านที่ 2 (Acid &amp; Armor):</i> เพิ่มเห็ดพิษและมอนสเตอร์เกราะหนา</li>
+<li class="bullet-item"><i>ด่านที่ 3 (Storm &amp; Chaos):</i> วัตถุดิบครบ 4 ชนิด พร้อมบอสใหญ่ ราชันย์อสูรเวท (Chaos Overlord)</li>
+<li class="bullet-item"><i>ด่านที่ 4 (Endless Mode):</i> โหมดเอาชีวิตรอดไม่รู้จบเพื่อสะสมคะแนนสูงสุด</li>
+<li class="bullet-item"><b>มอนสเตอร์ 5 ประเภท:</b> อสูรพฤกษา (แพ้ไฟ), โกเลมไฟ (แพ้น้ำแข็ง), สัตว์ร้ายเกราะหิน (แพ้กรดพิษ), อิมป์ว่องไว (แพ้สายฟ้า), และราชันย์อสูรเวท (บอสใหญ่สลับเกราะ 4 ธาตุ)</li>
+<li class="bullet-item"><b>ขวดยา 7 ชนิด:</b> ยาเพลิง, ยาน้ำแข็ง, ยากรดพิษ, ยาสายฟ้า, ยาหมอกพายุพิษ (Frost-Venom), ยาระเบิดมหาเวท (Universal Explosive - ไอเทมแรร์ Miracle Brew สุ่มออก 15-25%), และยาล้มเหลว (Failed Potion)</li>
+<li class="numbered-item" value="3"><b>ขอบเขตด้านกราฟิก เสียง และความเข้ากันได้:</b></li>
+<li class="bullet-item">รองรับโหมดเต็มจอ (F11) และการปรับขนาดหน้าต่างแบบ Responsive รักษาสัดส่วน 16:9 (Letterboxing)</li>
+<li class="bullet-item">ระบบเสียงดนตรีประกอบสังเคราะห์แบบ Multi-Track ปิด/เปิดเสียงได้ทันทีด้วยปุ่ม [M]</li>
+<li class="bullet-item">ยึดหลัก <b>Zero-Emoji Policy</b> ไม่ใช้อีโมจิใดๆ ในระบบเพื่อความเข้ากันได้ของทุกระบบปฏิบัติการ</li>
+<hr class="divider"/>
+<h1 class="chapter-title">บทที่ 2: ส่วนการพัฒนา</h1>
+<h3 class="section-title">2.1 เนื้อเรื่องย่อหรือวิธีการเล่น (กรณีเกมส์)</h3>
+<h4 class="subsection-title">เนื้อเรื่องย่อ (Story Synopsis)</h4>
+<p class="normal-para">ในคืนเดือนดับ ณ ยอดหอคอยเวทมนตร์โบราณอันเงียบสงบ &quot;ศิษย์ฝึกหัดนักปรุงยา&quot; ผู้ไร้พลังเวทมนตร์ต่อสู้โดยตรง ได้รับมอบหมายให้เฝ้าหอคอยเพียงลำพัง ทว่ารอยแยกมิติแห่งความโกลาหลกลับเปิดออก ปลดปล่อยกองทัพมอนสเตอร์บรรพกาลนำโดย &quot;ราชันย์อสูรเวท (Chaos Overlord)&quot; เข้าบดขยี้หอคอย ขณะเดียวกัน สายธารเวทมนตร์ใต้พิภพเกิดความปั่นป่วน สูบเอาสมุนไพรและแร่ธาตุทะลักขึ้นมาตามสายพานลำเลียงอย่างบ้าคลั่ง ทางรอดเดียวของศิษย์ฝึกหัดคือการตั้งสติ ใช้ภูมิปัญญาจากตำราเวทมนตร์ หยิบวัตถุดิบ 3 ชิ้น ต้มผสมยาตามจุดอ่อนของศัตรู แล้วขว้างระเบิดสกัดกั้นก่อนที่หอคอยเวทมนตร์จะพังทลายลง</p>
+<h4 class="subsection-title">วิธีการเล่นและการควบคุม (Controls &amp; Game Mechanics)</h4>
+<table class="report-table">
+<tr>
+<th>การกระทำ (Action)</th>
+<th>ปุ่มควบคุม (Key / Mouse)</th>
+<th>คำอธิบายรายละเอียด</th>
+</tr>
+<tr>
+<td><b>ดึงวัตถุดิบลงหม้อ</b></td>
+<td>กดปุ่มตัวเลข <code class="inline-code">1</code>, <code class="inline-code">2</code>, <code class="inline-code">3</code>, <code class="inline-code">4</code>, <code class="inline-code">5</code></td>
+<td>ดึงวัตถุดิบจากสายพานช่องที่ 1 ถึง 5 ลงหม้อต้มยา (ช่องนั้นจะเสกของใหม่มาแทนที่อัตโนมัติ)</td>
+</tr>
+<tr>
+<td><b>สุ่มของใหม่ทั้งสายพาน (Reroll)</b></td>
+<td>กดปุ่ม <code class="inline-code">F</code></td>
+<td>ล้างและสุ่มวัตถุดิบใหม่ทั้ง 5 ช่องบนสายพานทันที (คูลดาวน์ 1.0 วินาที พร้อมการันตีสูตรแก้ทางศัตรูตัวหน้าสุด)</td>
+</tr>
+<tr>
+<td><b>ต้มผสมยา (Brew Potion)</b></td>
+<td>กดปุ่ม <code class="inline-code">Spacebar</code></td>
+<td>ผสมยาเมื่อใส่ของครบ 3 ชิ้น (มีระบบคาถาชี้แนะรูปภาพแสดงขึ้นเมื่อใส่ครบ 2 ชิ้น)</td>
+</tr>
+<tr>
+<td><b>ดึงวัตถุดิบออกจากหม้อ</b></td>
+<td>กดปุ่ม <code class="inline-code">Backspace</code></td>
+<td>นำวัตถุดิบชิ้นล่าสุดออกจากหม้อ หรือกดล้างหม้อที่ระเบิดควัน</td>
+</tr>
+<tr>
+<td><b>ล้างหม้อต้มทั้งหมด</b></td>
+<td>กดปุ่ม <code class="inline-code">C</code></td>
+<td>เทวัตถุดิบทั้งหมดในหม้อทิ้งทันที</td>
+</tr>
+<tr>
+<td><b>เลือกขวดยาพร้อมใช้</b></td>
+<td>กดปุ่ม <code class="inline-code">Q</code>, <code class="inline-code">W</code>, <code class="inline-code">E</code>, <code class="inline-code">R</code> หรือ <b>คลิกเมาส์</b></td>
+<td>สลับเลือกช่องพักยาที่ 1 ถึง 4 บนแท่นวางยา</td>
+</tr>
+<tr>
+<td><b>เล็งและปาขวดยา</b></td>
+<td>เลื่อนเมาส์ไปยังเลนมอนสเตอร์ แล้ว <b>คลิกซ้าย</b></td>
+<td>เล็งวงรัศมีระเบิด (AoE Radius Circle) แล้วขว้างยาไปยังจุดตกกระทบ</td>
+</tr>
+<tr>
+<td><b>เปิด/ปิด สมุดตำราสูตรยา</b></td>
+<td>กดปุ่ม <code class="inline-code">Tab</code> หรือ <code class="inline-code">H</code></td>
+<td>เปิดตำราเวทมนตร์ดูสูตรยา 3 วัตถุดิบและข้อมูลจุดอ่อนมอนสเตอร์</td>
+</tr>
+<tr>
+<td><b>เปิด/ปิดเสียง (Mute Toggle)</b></td>
+<td>กดปุ่ม <code class="inline-code">M</code></td>
+<td>สลับเปิด/ปิดเสียงเพลง BGM และเสียงเอฟเฟกต์ทั้งหมดทันที</td>
+</tr>
+<tr>
+<td><b>เลื่อนการ์ดสอนสูตรก่อนเริ่มด่าน</b></td>
+<td>กดปุ่ม <code class="inline-code">A</code> / <code class="inline-code">D</code> หรือ <code class="inline-code">ลูกศรซ้าย/ขวา</code></td>
+<td>พลิกดูข้อมูลมอนสเตอร์หน้า 1 และสมการสูตรยาหน้า 2</td>
+</tr>
+<tr>
+<td><b>สลับโหมดเต็มหน้าจอ</b></td>
+<td>กดปุ่ม <code class="inline-code">F11</code></td>
+<td>สลับระหว่างโหมดหน้าต่างปกติและโหมดเต็มจอ (Fullscreen Responsive)</td>
+</tr>
+<tr>
+<td><b>กลับสู่เมนูหลัก</b></td>
+<td>กดปุ่ม <code class="inline-code">Esc</code></td>
+<td>ย้อนกลับสู่หน้าจอเมนูหลักของเกม</td>
+</tr>
+</table>
+<hr class="divider"/>
+<h3 class="section-title">2.2 คลาสไดอะแกรมการพัฒนา พร้อมคำอธิบาย</h3>
+<h4 class="subsection-title">แผนภาพคลาสไดอะแกรม (Mermaid Class Diagram)</h4>
+<pre class="code-block"><code>classDiagram
+    %% Core Interfaces
+    class Renderable {
+        &lt;&lt;interface&gt;&gt;
+        +render(Graphics2D g)*
+    }
+    class Updatable {
+        &lt;&lt;interface&gt;&gt;
+        +update(double dt)*
+    }
+    class Damageable {
+        &lt;&lt;interface&gt;&gt;
+        +takeDamage(int amount, ElementType element)*
+        +isDead() boolean*
+        +getHp() int*
+        +getMaxHp() int*
+    }
+
+    %% Base Entities
+    class Tower {
+        -int hp
+        -int maxHp
+        -int x
+        -int y
+        +takeDamage(int amount, ElementType element)
+        +reset()
+    }
+
+    class Monster {
+        &lt;&lt;abstract&gt;&gt;
+        #double x
+        #double y
+        #double speed
+        #int hp
+        #int maxHp
+        #ElementType weakness
+        #int attackPower
+        +update(double dt, Tower tower)
+        +takeDamage(int amount, ElementType element)
+    }
+
+    class Potion {
+        &lt;&lt;abstract&gt;&gt;
+        #String name
+        #ElementType element
+        #int baseDamage
+        #Color flaskColor
+        +onImpact(double impactX, double impactY, List~Monster~ monsters, List~VisualEffect~ effects)*
+        +getRadius() double
+    }
+
+    %% Monster Subclasses (Inheritance &amp; Polymorphism)
+    class FireGolem {
+        +FireGolem(double x, double y)
+    }
+    class PlantCreeper {
+        +PlantCreeper(double x, double y)
+    }
+    class ArmoredBeast {
+        +ArmoredBeast(double x, double y)
+    }
+    class SwiftImp {
+        +SwiftImp(double x, double y)
+    }
+    class ChaosBoss {
+        -double shiftTimer
+        +takeDamage(int amount, ElementType element)
+        +update(double dt, Tower tower)
+    }
+
+    %% Potion Subclasses (Inheritance &amp; Polymorphism)
+    class FirePotion {
+        +onImpact(...)
+    }
+    class IcePotion {
+        +onImpact(...)
+    }
+    class PoisonPotion {
+        +onImpact(...)
+    }
+    class LightningPotion {
+        +onImpact(...)
+    }
+    class FrostVenomPotion {
+        +onImpact(...)
+    }
+    class ExplosivePotion {
+        +onImpact(...)
+    }
+    class FailedPotion {
+        +onImpact(...)
+    }
+
+    %% Items &amp; Composition
+    class ConveyorBelt {
+        -IngredientType[] slots
+        +grab(int index) IngredientType
+        +update(double dt, ...)
+        +rerollAll(...) boolean
+    }
+    class Cauldron {
+        -List~IngredientType~ ingredients
+        +addIngredient(IngredientType item) boolean
+        +brew() Potion
+    }
+    class PotionRack {
+        -Potion[] slots
+        -int selectedIndex
+        +addPotion(Potion potion) boolean
+        +consumeSelected() Potion
+    }
+
+    %% Engine &amp; Singletons
+    class GameEngine {
+        -Tower tower
+        -ConveyorBelt belt
+        -Cauldron cauldron
+        -PotionRack potionRack
+        -WaveManager waveManager
+        -List~Monster~ activeMonsters
+        -List~Projectile~ activeProjectiles
+        -List~VisualEffect~ activeEffects
+        +update(double dt)
+        +throwPotionAt(double x, double y) boolean
+    }
+    class SoundManager {
+        &lt;&lt;singleton&gt;&gt;
+        -static SoundManager instance
+        +playBattleBgm()
+        +stopBgm()
+        +toggleSound()
+    }
+    class ProfileManager {
+        &lt;&lt;singleton&gt;&gt;
+        -static ProfileManager instance
+        +getStars() int
+        +upgradeSkill(String skillId) boolean
+    }
+
+    %% Relationships
+    Damageable &lt;|.. Tower
+    Renderable &lt;|.. Tower
+    Damageable &lt;|.. Monster
+    Renderable &lt;|.. Monster
+    Renderable &lt;|.. Potion
+    Renderable &lt;|.. ConveyorBelt
+    Renderable &lt;|.. Cauldron
+    Renderable &lt;|.. PotionRack
+
+    Monster &lt;|-- FireGolem
+    Monster &lt;|-- PlantCreeper
+    Monster &lt;|-- ArmoredBeast
+    Monster &lt;|-- SwiftImp
+    Monster &lt;|-- ChaosBoss
+
+    Potion &lt;|-- FirePotion
+    Potion &lt;|-- IcePotion
+    Potion &lt;|-- PoisonPotion
+    Potion &lt;|-- LightningPotion
+    Potion &lt;|-- FrostVenomPotion
+    Potion &lt;|-- ExplosivePotion
+    Potion &lt;|-- FailedPotion
+
+    GameEngine *-- Tower
+    GameEngine *-- ConveyorBelt
+    GameEngine *-- Cauldron
+    GameEngine *-- PotionRack
+    GameEngine o-- Monster
+    GameEngine o-- Potion</code></pre>
+<h4 class="subsection-title">คำอธิบายความสัมพันธ์ในคลาสไดอะแกรม:</h4>
+<li class="numbered-item" value="1"><b>Interface Realization (การปฏิบัติตามสัญญาอินเทอร์เฟซ):</b></li>
+<li class="bullet-item"><code class="inline-code">Tower</code> และ <code class="inline-code">Monster</code> ปฏิบัติตามอินเทอร์เฟซ <code class="inline-code">Damageable</code> (รับดาเมจได้) และ <code class="inline-code">Renderable</code> (วาดภาพลงกราฟิกได้) ทำให้ Game Loop สามารถสั่งอัปเดตและเรนเดอร์ออบเจกต์ได้อย่างเป็นเอกภาพ</li>
+<li class="numbered-item" value="2"><b>Inheritance &amp; Polymorphism (การสืบทอดและพหุสัณฐาน):</b></li>
+<li class="bullet-item"><code class="inline-code">Monster</code> เป็นคลาสแม่นามธรรม (Abstract Class) ที่มีคลาสลูก 5 ตัว โดย <code class="inline-code">ChaosBoss</code> ทำการ Override เมธอด <code class="inline-code">takeDamage()</code> และ <code class="inline-code">update()</code> เพื่อเพิ่มกลไกการสลับเกราะ 4 ธาตุ</li>
+<li class="bullet-item"><code class="inline-code">Potion</code> เป็นคลาสแม่นามธรรมที่มีคลาสลูก 7 ตัว โดยทุกคลาสต้อง Override เมธอด <code class="inline-code">onImpact()</code> เพื่อสร้างเอฟเฟกต์เฉพาะธาตุของตนเอง</li>
+<li class="numbered-item" value="3"><b>Composition (การประกอบวัตถุ):</b></li>
+<li class="bullet-item"><code class="inline-code">GameEngine</code> ทำหน้าที่เป็นผู้ประสานงานหลัก โดยประกอบขึ้นจากออบเจกต์ <code class="inline-code">Tower</code>, <code class="inline-code">ConveyorBelt</code>, <code class="inline-code">Cauldron</code>, และ <code class="inline-code">PotionRack</code> ซึ่งทำงานร่วมกันแบบ Has-A Relationship</li>
+<li class="numbered-item" value="4"><b>Singleton Pattern:</b></li>
+<li class="bullet-item"><code class="inline-code">SoundManager</code> และ <code class="inline-code">ProfileManager</code> ถูกออกแบบเป็น Singleton เพื่อให้ระบบเสียงและการบันทึกข้อมูลคะแนน/ดาว สามารถเข้าถึงได้จากทุกหน้าจอโดยมี Instance เพียงหนึ่งเดียวในระบบ</li>
+<hr class="divider"/>
+<h3 class="section-title">2.3 รูปแบบ Application / Applet</h3>
+<p class="normal-para">โครงการ <b>POTION PANIC</b> พัฒนาขึ้นในรูปแบบ <b>Standalone Desktop Application</b> (สร้างด้วย Java Swing &amp; AWT) โดยไม่ได้ใช้รูปแบบ Java Applet</p>
+<h4 class="subsection-title">การเปรียบเทียบและการตัดสินใจเลือกเชิงสถาปัตยกรรม:</h4>
+<li class="numbered-item" value="1"><b>Desktop Application (รูปแบบที่เลือกใช้):</b></li>
+<li class="bullet-item">มีจุดเริ่มต้นการทำงาน (Entry Point) ผ่านเมธอด <code class="inline-code">public static void main(String[] args)</code> ในคลาส [Main.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/Main.java)</li>
+<li class="bullet-item">รันอยู่บน Java Virtual Machine (JVM) โดยตรง ทำให้สามารถเข้าถึงฮาร์ดแวร์เร่งความเร็วของกราฟิก (Hardware-Accelerated Java2D), ระบบเสียงสังเคราะห์ผ่าน <code class="inline-code">javax.sound.sampled.SourceDataLine</code>, และการจัดการหน้าต่างแบบ Fullscreen ได้อย่างเต็มประสิทธิภาพ</li>
+<li class="bullet-item">มีความปลอดภัย เสถียรภาพสูง และสามารถแพ็กเกจเป็นไฟล์ Executable JAR (<code class="inline-code">PotionPanic.jar</code>) ดับเบิลคลิกเล่นได้บนทุกระบบปฏิบัติการ</li>
+<li class="numbered-item" value="2"><b>Java Applet (เหตุผลที่ไม่เลือกใช้):</b></li>
+<li class="bullet-item">ในอดีต Applet ถูกออกแบบมาเพื่อรันอยู่ภายในเว็บเบราว์เซอร์ผ่านคลาส <code class="inline-code">java.applet.Applet</code> หรือ <code class="inline-code">javax.swing.JApplet</code></li>
+<li class="bullet-item"><b>ข้อจำกัดเชิงเทคโนโลยี:</b> บริษัท Oracle ได้ประกาศ Deprecated เทคโนโลยี Applet ตั้งแต่ Java SE 9 และได้ทำการ <b>ตัดออกจากชุดภาษา Java อย่างถาวรตั้งแต่ Java SE 11 เป็นต้นมา</b> เนื่องจากปัญหาด้านช่องโหว่ความปลอดภัย (Security Vulnerabilities) และเว็บเบราว์เซอร์ยุคใหม่ทั้งหมด (Chrome, Edge, Safari, Firefox) ได้ยกเลิกการรองรับ NPAPI Plugin ไปแล้ว</li>
+<li class="bullet-item">ดังนั้น การพัฒนาในรูปแบบ <b>Desktop Application บน Java 21</b> จึงเป็นมาตรฐานที่ถูกต้อง ทันสมัย และสอดคล้องกับแนวทางการพัฒนาซอฟต์แวร์ระดับสากล</li>
+<hr class="divider"/>
+<h3 class="section-title">2.4 อธิบายส่วนของโปรแกรมที่มี</h3>
+<h4 class="subsection-title">1. Constructor (คอนสตรัคเตอร์)</h4>
+<p class="normal-para">คอนสตรัคเตอร์คือเมธอดพิเศษที่มีชื่อตรงกับชื่อคลาส ทำหน้าที่กำหนดค่าเริ่มต้น (Initialization) ให้กับสถานะของออบเจกต์ทันทีที่ถูกสร้างด้วยคีย์เวิร์ด <code class="inline-code">new</code> ช่วยป้องกันข้อผิดพลาด NullPointerException และรับประกันความสมบูรณ์ของข้อมูล</p>
+<p class="normal-para"><i>ตัวอย่างโค้ดในโปรเจกต์ ([ChaosBoss.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/entity/monster/ChaosBoss.java)):</i></p>
+<pre class="code-block"><code>public class ChaosBoss extends Monster {
+    private double shiftTimer = 0.0;
+    private final double SHIFT_INTERVAL = 7.5; // สลับเกราะทุก 7.5 วินาที
+
+    public ChaosBoss(double startX, double startY) {
+        // เรียก Constructor ของคลาสแม่ (Monster) ด้วยคำสั่ง super
+        // กำหนดเลือด 420, ความเร็ว 0.28, พลังโจมตี 25, จุดอ่อนเริ่มต้นที่ธาตุไฟ
+        super(&quot;ราชันย์อสูรเวท (Chaos Overlord)&quot;, 420, 0.28, 25, ElementType.FIRE, startX, startY);
+        this.width = 96;
+        this.height = 96;
+    }
+}</code></pre>
+<hr class="divider"/>
+<h4 class="subsection-title">2. Encapsulation (การห่อหุ้มข้อมูล)</h4>
+<p class="normal-para">การห่อหุ้มข้อมูลคือการจำกัดสิทธิ์การเข้าถึงข้อมูลสถานะภายในออบเจกต์ โดยประกาศฟิลด์เป็น <code class="inline-code">private</code> และเปิดให้ภายนอกเข้าถึงหรือแก้ไขได้เฉพาะผ่านเมธอด <code class="inline-code">Getter</code> และ <code class="inline-code">Setter</code> เท่านั้น ซึ่งเปิดโอกาสให้สามารถใส่เงื่อนไขตรวจสอบความถูกต้องของข้อมูล (Validation) ป้องกันไม่ให้ค่าสถานะของระบบเสียหาย</p>
+<p class="normal-para"><i>ตัวอย่างโค้ดในโปรเจกต์ ([Tower.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/entity/Tower.java)):</i></p>
+<pre class="code-block"><code>public class Tower implements Damageable, Renderable {
+    private int hp;
+    private int maxHp;
+
+    public Tower(int maxHp) {
+        this.maxHp = maxHp;
+        this.hp = maxHp;
+    }
+
+    @Override
+    public void takeDamage(int amount, ElementType element) {
+        // ควบคุมไม่ให้พลังชีวิตของหอคอยติดลบต่ำกว่า 0
+        this.hp = Math.max(0, this.hp - amount);
+    }
+
+    public int getHp() { return hp; }
+    public int getMaxHp() { return maxHp; }
+    
+    public void setMaxHp(int maxHp) {
+        if (maxHp &gt; 0) { // ตรวจสอบความถูกต้องของข้อมูล
+            this.maxHp = maxHp;
+        }
+    }
+}</code></pre>
+<hr class="divider"/>
+<h4 class="subsection-title">3. Composition (การประกอบวัตถุ)</h4>
+<p class="normal-para">การสร้างคลาสขนาดใหญ่โดยประกอบขึ้นจากออบเจกต์ของคลาสย่อยๆ ที่มีความรับผิดชอบเฉพาะทาง (Has-A Relationship) เพื่อลดความซ้ำซ้อนและแยกหน้าที่การทำงานอย่างชัดเจนตามหลัก Single Responsibility Principle</p>
+<p class="normal-para"><i>ตัวอย่างโค้ดในโปรเจกต์ ([GameEngine.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/engine/GameEngine.java)):</i></p>
+<pre class="code-block"><code>public class GameEngine {
+    // GameEngine &quot;ประกอบด้วย (Has-A)&quot; หอคอย, สายพาน, หม้อต้ม, และแท่นวางยา
+    private final Tower tower;
+    private final ConveyorBelt belt;
+    private final Cauldron cauldron;
+    private final PotionRack potionRack;
+    private final WaveManager waveManager;
+    private final List&lt;Monster&gt; activeMonsters = new ArrayList&lt;&gt;();
+    private final List&lt;Projectile&gt; activeProjectiles = new ArrayList&lt;&gt;();
+    private final List&lt;VisualEffect&gt; activeEffects = new ArrayList&lt;&gt;();
+
+    public GameEngine() {
+        this.tower = new Tower(Constants.TOWER_MAX_HP);
+        this.belt = new ConveyorBelt();
+        this.cauldron = new Cauldron(Constants.ZONE_BOT_X, Constants.ZONE_BOT_Y + 15);
+        this.potionRack = new PotionRack(Constants.ZONE_BOT_X + 220, Constants.ZONE_BOT_Y + 15);
+        this.waveManager = new WaveManager();
+    }
+}</code></pre>
+<hr class="divider"/>
+<h4 class="subsection-title">4. Polymorphism (ภาวะพหุสัณฐาน)</h4>
+<p class="normal-para">ความสามารถของออบเจกต์ในคลาสลูกต่างๆ ที่สืบทอดมาจากคลาสแม่เดียวกัน ในการตอบสนองต่อชื่อเมธอดเดียวกันด้วยพฤติกรรมเฉพาะตัวที่แตกต่างกันอย่างสิ้นเชิงผ่านการ Override เมธอด</p>
+<p class="normal-para"><i>ตัวอย่างโค้ดในโปรเจกต์ (คลาสลูกของ [Potion.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/entity/potion/Potion.java)):</i></p>
+<pre class="code-block"><code>// ในคลาสลูก FirePotion: ปะทุเป็นเสาเพลิงและติดสถานะเผาไหม้ (Burn)
+public class FirePotion extends Potion {
+    @Override
+    public void onImpact(double impactX, double impactY, List&lt;Monster&gt; allMonsters, List&lt;VisualEffect&gt; effects) {
+        effects.add(VisualEffect.createFireBurst(impactX, impactY, getRadius()));
+        for (Monster m : allMonsters) {
+            if (isInRadius(m, impactX, impactY)) {
+                m.takeDamage(baseDamage, ElementType.FIRE);
+                m.applyStatus(StatusEffect.BURN, 4.0);
+            }
+        }
+    }
+}
+
+// ในคลาสลูก IcePotion: แผ่หนามน้ำแข็งและติดสถานะสโลว์แช่แข็ง (Freeze)
+public class IcePotion extends Potion {
+    @Override
+    public void onImpact(double impactX, double impactY, List&lt;Monster&gt; allMonsters, List&lt;VisualEffect&gt; effects) {
+        effects.add(VisualEffect.createIceSpikes(impactX, impactY, getRadius()));
+        for (Monster m : allMonsters) {
+            if (isInRadius(m, impactX, impactY)) {
+                m.takeDamage(baseDamage, ElementType.ICE);
+                m.applyStatus(StatusEffect.FREEZE, 4.0);
+            }
+        }
+    }
+}</code></pre>
+<hr class="divider"/>
+<h4 class="subsection-title">5. Abstract Class &amp; Interface (คลาสนามธรรมและอินเทอร์เฟซ)</h4>
+<li class="bullet-item"><b>Interface (<code class="inline-code">Renderable</code>, <code class="inline-code">Damageable</code>):</b> ทำหน้าที่เป็นสัญญาข้อตกลง (Contract) ที่บังคับให้คลาสที่นำไปใช้ต้องเขียนการทำงานตามเมธอดที่ประกาศไว้</li>
+<li class="bullet-item"><b>Abstract Class (<code class="inline-code">Monster</code>, <code class="inline-code">Potion</code>):</b> คลาสแม่ที่ไม่สามารถนำไป <code class="inline-code">new</code> เป็นออบเจกต์ได้โดยตรง ทำหน้าที่รวมฟิลด์และโค้ดพื้นฐานที่คลาสลูกใช้ร่วมกัน พร้อมประกาศ Abstract Method ให้คลาสลูกต้องนำไป Override</li>
+<p class="normal-para"><i>ตัวอย่างโค้ดในโปรเจกต์ ([Monster.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/entity/monster/Monster.java)):</i></p>
+<pre class="code-block"><code>public abstract class Monster implements Damageable, Renderable {
+    protected double x, y, speed;
+    protected int hp, maxHp;
+    protected ElementType weakness;
+
+    // คำนวณดาเมจธาตุจุดอ่อน (Critical 2.5 เท่า) และดาเมจต้านทาน (Resist 15%)
+    @Override
+    public void takeDamage(int amount, ElementType element) {
+        if (element == ElementType.UNIVERSAL) {
+            int finalDmg = (int)(amount * 1.5);
+            this.hp = Math.max(0, this.hp - finalDmg);
+        } else if (element == this.weakness) {
+            int finalDmg = (int)(amount * 2.5); // จุดอ่อนโดน 2.5 เท่า
+            this.hp = Math.max(0, this.hp - finalDmg);
+        } else {
+            int finalDmg = Math.max(1, (int)(amount * 0.15)); // ผิดธาตุโดนต้านทาน
+            this.hp = Math.max(0, this.hp - finalDmg);
+        }
+    }
+}</code></pre>
+<hr class="divider"/>
+<h4 class="subsection-title">6. Inheritance (การสืบทอดคุณสมบัติ)</h4>
+<p class="normal-para">การสืบทอดคุณสมบัติและพฤติกรรมจากคลาสแม่มาสู่คลาสลูกผ่านคีย์เวิร์ด <code class="inline-code">extends</code> ช่วยลดความซ้ำซ้อนของโค้ด (Code Reusability) ทำให้คลาสลูกเขียนเฉพาะส่วนที่เพิ่มเติมหรือแตกต่างจากคลาสแม่</p>
+<p class="normal-para"><i>ตัวอย่างโค้ดในโปรเจกต์ ([SwiftImp.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/entity/monster/SwiftImp.java)):</i></p>
+<pre class="code-block"><code>public class SwiftImp extends Monster {
+    public SwiftImp(double x, double y) {
+        // สืบทอดระบบเดิน หลอดเลือด แอนิเมชัน และฟิสิกส์จาก Monster ทั้งหมด
+        // กำหนดความเร็วสูง 1.15 พลังโจมตี 12 และแพ้ธาตุสายฟ้า (LIGHTNING)
+        super(&quot;อิมป์ว่องไว (Swift Imp)&quot;, 65, 1.15, 12, ElementType.LIGHTNING, x, y);
+    }
+}</code></pre>
+<hr class="divider"/>
+<h3 class="section-title">2.5 หน้าจอ GUI อธิบายส่วนประกอบของ GUI โครงสร้างของ GUI ประกอบด้วย Component อะไรบ้าง</h3>
+<p class="normal-para">โครงสร้างหน้าจอ GUI ของเกมพัฒนาขึ้นโดยอาศัยโครงสร้างลำดับชั้นของ Java Swing (Hierarchical Component Tree):</p>
+<pre class="code-block"><code>[JFrame: GameWindow]
+  └── [JPanel: rootPanel (ใช้ CardLayout)]
+        ├── [MainMenuPanel]      : หน้าจอเมนูหลัก พร้อมไตเติลแอนิเมชันลอยตัว และปุ่มนำทาง
+        ├── [StageSelectPanel]   : หน้าจอเลือกด่าน 4 ด่าน และร้านอัปเกรดสกิลเวทมนตร์ (Shop)
+        ├── [GameplayPanel]      : หน้าจอเล่นเกมหลัก (Game Canvas เรนเดอร์ 60 FPS)
+        │     └── [StageIntroOverlay] : หน้าต่างโมดอลการ์ดสอนสูตรก่อนเริ่มด่าน
+        ├── [VictoryPanel]       : หน้าจอสรุปคะแนนและดวงดาวเมื่อชนะด่าน
+        └── [GameOverPanel]      : หน้าจอแสดงผลเมื่อหอคอยแตก พร้อมคำแนะนำ</code></pre>
+<h4 class="subsection-title">หน้าที่และส่วนประกอบสำคัญของแต่ละ Component:</h4>
+<li class="numbered-item" value="1"><b><code class="inline-code">GameWindow (JFrame)</code>:</b></li>
+<li class="bullet-item">เป็น Container ชั้นนอกสุด ทำหน้าที่สร้างหน้าต่างขนาด 1280x720 พิกเซล</li>
+<li class="bullet-item">ควบคุมการสลับหน้าจอ (Scene Switching) ผ่าน <code class="inline-code">CardLayout</code></li>
+<li class="bullet-item">จัดการการสลับโหมดเต็มหน้าจอ (Fullscreen Toggle F11) และการทำความสะอาดโปรเซสก่อนปิดโปรแกรม (<code class="inline-code">WindowAdapter</code>)</li>
+<li class="numbered-item" value="2"><b><code class="inline-code">GameplayPanel (JPanel)</code>:</b></li>
+<li class="bullet-item">คอมโพเนนต์หลักที่ทำหน้าที่เป็น Game Canvas โดย Override เมธอด <code class="inline-code">paintComponent(Graphics g)</code> และใช้ <code class="inline-code">Graphics2D</code> วาดภาพกราฟิกทั้งหมด</li>
+<li class="bullet-item">มีระบบ Game Loop ที่ควบคุมความเร็ว 60 เฟรมต่อวินาทีด้วย <code class="inline-code">javax.swing.Timer</code></li>
+<li class="bullet-item"><b>การแบ่งโซนเรนเดอร์ 3 ส่วน (3-Zone Virtual Layout):</b></li>
+<li class="numbered-item" value="1"><i>Battlefield Zone (ด้านบน 0 - 360px):</i> พื้นหลังสนามรบหินโบราณ, หอคอยเวทมนตร์, การเดินของมอนสเตอร์ (จัดลำดับ Depth Sorting แกน Y), วงแหวนล็อกเป้าหมาย, และการบินของขวดยา</li>
+<li class="numbered-item" value="2"><i>Conveyor Zone (ตรงกลาง 360 - 480px):</i> รางสายพานหินสลักอักขระรูน พร้อมช่องแสดงวัตถุดิบ 5 ช่อง และป้ายปุ่มลัด [1]-[5] และ [F]</li>
+<li class="numbered-item" value="3"><i>Alchemy Station Zone (ด้านล่าง 480 - 720px):</i> โต๊ะทำงานไม้โอ๊ค, หม้อต้มยา 3 ช่องพร้อมคาถาชี้แนะรูปภาพ, แท่นพักยาวางขวดยา 4 ช่อง [Q]-[R], และกระดานสมการสูตรยาเร่งด่วน</li>
+<li class="numbered-item" value="3"><b>การแสดงผลแบบ Responsive Scaling ([ScaleHelper.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/util/ScaleHelper.java)):</b></li>
+<li class="bullet-item">คำนวณอัตราส่วน Scale และทำ Letterboxing (ขอบดำ) เพื่อให้กราฟิก ฟอนต์ และตำแหน่งคลิกเมาส์คงสัดส่วน 16:9 (1280x720) เสมอบนทุกขนาดหน้าจอ</li>
+<hr class="divider"/>
+<h3 class="section-title">2.6 อธิบาย Event handling ที่มีในหน้าจอ</h3>
+<p class="normal-para">ระบบรับส่งเหตุการณ์และการตอบสนองต่อผู้เล่นอาศัย Event Listeners ของ Java AWT/Swing:</p>
+<li class="numbered-item" value="1"><b>Keyboard Event Handling (<code class="inline-code">KeyAdapter</code> &amp; <code class="inline-code">KeyEventDispatcher</code>):</b></li>
+<li class="bullet-item"><b>Global Shortcuts (ดักจับผ่าน <code class="inline-code">KeyEventDispatcher</code> ใน <code class="inline-code">GameWindow</code>):</b></li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_F11</code>: สลับโหมดเต็มจอ / หน้าต่างปกติได้จากทุกหน้าจอ</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_M</code>: สลับเปิด/ปิดเสียงดนตรีประกอบและเสียงเอฟเฟกต์ทั้งหมด (Global Mute Toggle)</li>
+<li class="bullet-item"><b>Gameplay Shortcuts (ดักจับผ่าน <code class="inline-code">KeyAdapter</code> ใน <code class="inline-code">GameplayPanel</code>):</b></li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_1</code> ถึง <code class="inline-code">VK_5</code>: สั่ง <code class="inline-code">GameEngine.grabIngredientToCauldron(index)</code> ดึงของจากสายพานลงหม้อ</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_F</code>: สั่ง <code class="inline-code">GameEngine.rerollBelt()</code> ล้างสุ่มวัตถุดิบใหม่ทั้งสายพาน</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_SPACE</code>: สั่ง <code class="inline-code">GameEngine.brewPotion()</code> ผสมยาในหม้อ หรือสั่งเริ่มด่านในหน้าการ์ดสอนสูตร</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_BACK_SPACE</code>: นำวัตถุดิบชิ้นล่าสุดออกจากหม้อ หรือล้างควันเมื่อหม้อระเบิด</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_C</code>: ล้างวัตถุดิบทั้งหมดในหม้อต้มทิ้งทันที</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_Q, VK_W, VK_E, VK_R</code>: สลับเลือกช่องพักยาที่ 1 ถึง 4</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_TAB, VK_H</code>: สลับเปิด/ปิด สมุดตำราเวทมนตร์ (Recipe Grimoire)</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_A, VK_D, VK_LEFT, VK_RIGHT</code>: พลิกเปลี่ยนหน้าการ์ดสอนสูตรก่อนเริ่มด่าน</li>
+<li class="bullet-item"><code class="inline-code">KeyEvent.VK_ESCAPE</code>: หยุดเกมชั่วคราวหรือย้อนกลับสู่เมนูหลัก</li>
+<li class="numbered-item" value="2"><b>Mouse Event Handling (<code class="inline-code">MouseAdapter</code> &amp; <code class="inline-code">MouseMotionAdapter</code>):</b></li>
+<li class="bullet-item"><b><code class="inline-code">mouseMoved(MouseEvent e)</code>:</b> แปลงพิกัดเมาส์จริงบนจอให้เป็นพิกัดเสมือน (Virtual Coordinates 1280x720) เพื่อใช้วาดวงเล็งเป้าหมายและรัศมีระเบิดบนสนามรบ</li>
+<li class="bullet-item"><b><code class="inline-code">mousePressed(MouseEvent e)</code>:</b></li>
+<li class="bullet-item">หากคลิกบนสายพานหรือปุ่มบนการ์ดสรุปข้อมูล: เรียกใช้คำสั่งตามปุ่มนั้น</li>
+<li class="bullet-item">หากคลิกบนสนามรบโซนบน: เรียกคำสั่ง <code class="inline-code">GameEngine.throwPotionAt(x, y)</code> เพื่อคำนวณวิถีโค้งและขว้างยาไปยังพิกัดที่คลิก</li>
+<hr class="divider"/>
+<h3 class="section-title">2.7 อธิบายอัลกอริทึมที่สำคัญในโปรแกรม</h3>
+<h4 class="subsection-title">1. อัลกอริทึมการตรวจสอบสูตรผสมยา 3 วัตถุดิบ (3-Ingredient Matching Algorithm)</h4>
+<p class="normal-para">ใน [RecipeBook.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/item/RecipeBook.java) ตรวจสอบความถี่ของวัตถุดิบ 3 ชิ้นโดยไม่ขึ้นกับลำดับก่อนหลัง (Order-Independent Matching) ช่วยให้ผู้เล่นสามารถหยิบวัตถุดิบชิ้นใดลงก่อนก็ได้:</p>
+<pre class="code-block"><code>Map&lt;IngredientType, Integer&gt; counts = countIngredients(ingredients);
+int red = counts.getOrDefault(RED_HERB, 0);
+int blue = counts.getOrDefault(BLUE_CRYSTAL, 0);
+int poison = counts.getOrDefault(TOXIC_MUSHROOM, 0);
+int thunder = counts.getOrDefault(THUNDER_ROOT, 0);
+
+if (red == 2 &amp;&amp; blue == 1) return new FirePotion();
+else if (blue == 2 &amp;&amp; red == 1) return new IcePotion();
+else if (poison == 2 &amp;&amp; red == 1) return new PoisonPotion();
+else if (thunder == 2 &amp;&amp; blue == 1) return new LightningPotion();
+else if (poison == 1 &amp;&amp; blue == 1 &amp;&amp; red == 1) return new FrostVenomPotion();
+else return new FailedPotion(); // สูตรไม่ถูกต้อง หม้อจะระเบิดควัน</code></pre>
+<h4 class="subsection-title">2. อัลกอริทึมการสุ่มวัตถุดิบอัจฉริยะตามภัยคุกคาม (Smart Threat-Aware Alchemy Spawning)</h4>
+<p class="normal-para">ใน [ConveyorBelt.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/item/ConveyorBelt.java) อัปเกรดจากการสุ่มแบบทั่วไป เป็นระบบวิเคราะห์ภัยคุกคามแบบไดนามิก 3 ลำดับชั้น:</p>
+<li class="bullet-item"><b>ลำดับที่ 1 (ตรวจจับภัยคุกคามหน้าสุด):</b> ตรวจจับมอนสเตอร์ตัวที่อยู่ใกล้หอคอยที่สุด ดึงสูตรยาที่ชนะทาง หากบนสายพานยังขาดวัตถุดิบตัวใด จะเร่งสุ่มชิ้นที่ขาดลงมาด้วยโอกาสสูงถึง 85%</li>
+<li class="bullet-item"><b>ลำดับที่ 2 (เติมเต็มหม้อต้ม):</b> หากในหม้อต้มมีของแล้ว 1-2 ชิ้น ระบบจะเพิ่มโอกาสสุ่มวัตถุดิบชิ้นที่ 3 ที่จะทำให้ปรุงสำเร็จลงสายพาน 80%</li>
+<li class="bullet-item"><b>ลำดับที่ 3 (การันตี Reroll 100%):</b> เมื่อกดปุ่ม [F] สายพานจะรับประกันการเสกวัตถุดิบครบ 3 ชิ้นสำหรับปรุงยาปราบศัตรูตัวหน้าสุดเสมอ ผู้เล่นจึงไม่ต้องเสียเวลารอสุ่มทิ้งซ้ำๆ</li>
+<h4 class="subsection-title">3. อัลกอริทึมบอสและการสลับเกราะหมุนเวียน (Boss Shield Shifting &amp; True Damage)</h4>
+<p class="normal-para">ใน [ChaosBoss.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/entity/monster/ChaosBoss.java) บอสใหญ่จะสลับเกราะธาตุหมุนเวียน (ไฟ $\rightarrow$ น้ำแข็ง $\rightarrow$ พิษ $\rightarrow$ สายฟ้า) ทุกๆ 7.5 วินาที แต่หากผู้เล่นใช้ <b>ยาระเบิดมหาเวท (Universal Explosive)</b> โจมตี เกราะจะแตกสลายทันทีและได้รับดาเมจรุนแรงถึง 3 เท่า</p>
+<h4 class="subsection-title">4. อัลกอริทึมของแรร์ยาระเบิดมหาเวท (Miracle Brew) และระบบเศรษฐกิจดาว</h4>
+<li class="bullet-item"><b>Miracle Brew:</b> เมื่อผู้เล่นปรุงยา 5 สูตรมาตรฐานสำเร็จ จะมีโอกาสสุ่มติดแจ็กพอตได้รับยาระเบิดมหาเวท 15% ในสถานการณ์ปกติ และเพิ่มเป็น 25% ในสถานการณ์คับขัน (HP หอคอย $\le 50\%$ หรือมีศัตรู $\ge 3$ ตัว)</li>
+<li class="bullet-item"><b>Star Economy:</b> ปรับเพดานอัปเกรดเป็น 9 ดาว พอดีกับดาวสูงสุดจาก 3 ด่านหลัก (3 ด่าน x 3 ดาว = 9 ดาว) มีปุ่มรีเซ็ตสกิลคืนดาว 100% พร้อมโบนัสเล่นซ้ำ (+1 ดาว) และโบนัส Endless (+1 ดาว/2 เวฟ)</li>
+<hr class="divider"/>
+<h1 class="chapter-title">บทที่ 3: สรุป</h1>
+<h3 class="section-title">3.1 ปัญหาที่พบระหว่างการพัฒนา</h3>
+<li class="numbered-item" value="1"><b>ปัญหามอนสเตอร์เดินทับซ้อนกันในเลนเดียวกัน (Sprite Overlapping):</b></li>
+<li class="bullet-item"><i>ปัญหา:</i> มอนสเตอร์ที่เกิดพร้อมกันเดินทับแกน Y เดียวกัน ทำให้ภาพมอนสเตอร์ตัวเล็กถูกตัวใหญ่บดบัง</li>
+<li class="bullet-item"><i>วิธีแก้:</i> ใช้ระบบกระจายพิกัดเกิด (Staggered Spawning) ร่วมกับอัลกอริทึม Depth Sorting (เรียงลำดับวาดตัวที่ Y น้อยก่อน และตัวที่ Y มากวาดทับ) ทำให้ภาพมีมิติความลึกที่ถูกต้อง</li>
+<li class="numbered-item" value="2"><b>ปัญหาความไม่เข้ากันของอีโมจิและฟอนต์ระหว่างระบบปฏิบัติการ:</b></li>
+<li class="bullet-item"><i>ปัญหา:</i> การใช้อีโมจิบน macOS บางครั้งแสดงผลเป็นสี่เหลี่ยมว่าง (Tofu) บน Windows</li>
+<li class="bullet-item"><i>วิธีแก้:</i> บังคับใช้นโยบาย <b>Zero-Emoji</b> ทั้งโปรเจกต์ โดยเปลี่ยนมาใช้วิธีวาดรูปทรงเรขาคณิตเวกเตอร์ เช่น ดาว 5 แฉก แม่กุญแจ สัญลักษณ์ธาตุ ร่วมกับ [FontHelper.java](file:///Users/kokarat/Desktop/POTION_PANIC_OOP/src/main/java/com/potionpanic/util/FontHelper.java)</li>
+<li class="numbered-item" value="3"><b>ปัญหาเสียงเพลงไม่ดังเมื่อเปิดเสียงกลับมา (Audio Mute/Unmute Bug):</b></li>
+<li class="bullet-item"><i>ปัญหา:</i> เมื่อกดปิดเสียงแล้วเปิดกลับมา เพลง BGM ไม่ยอมเล่นต่อ</li>
+<li class="bullet-item"><i>วิธีแก้:</i> แยกตัวแปร <code class="inline-code">desiredBgmType</code> ออกจากสถานะการเล่นจริง เมื่อกด Unmute ระบบจะตรวจสอบว่ากำลังอยู่ในฉากใดและเปิดเพลงที่ถูกต้องกลับมาทันที พร้อมปรับเธรดเสียงเป็น Daemon Thread เพื่อป้องกันเสียงดังค้างหลังปิดเกม</li>
+<li class="numbered-item" value="4"><b>ปัญหาการสั่นหน้าจอถี่เกินไปจนเวียนตา (Screen Shake Optimization):</b></li>
+<li class="bullet-item"><i>ปัญหา:</i> เดิมเมื่อปาขวดยาระเบิดทุกครั้งหน้าจอจะสั่น ทำให้ผู้เล่นเวียนหัวและเล็งเป้าหมายยาก</li>
+<li class="bullet-item"><i>วิธีแก้:</i> นำการสั่นหน้าจอตอนปาขวดยาระเบิดออกทั้งหมด และคงการสั่นไว้เฉพาะจังหวะที่ <b>&quot;หอคอยกำลังจะพัง&quot;</b> (เลือด &lt; 35% และโดนโจมตี) และตอนหอคอยพังทลายลงสู่ Game Over</li>
+<hr class="divider"/>
+<h3 class="section-title">3.2 จุดเด่นของโปรแกรมที่ไม่เหมือนใคร</h3>
+<li class="numbered-item" value="1"><b>ระบบปรุงยา 3 วัตถุดิบและสมการไอคอนภาพ (Visual Equations):</b> นำเสนอสูตรยาเป็นภาพสมการที่เข้าใจง่าย ไม่ต้องจำข้อความยาวๆ พร้อมระบบคาถาชี้แนะช่วยลดความกดดัน</li>
+<li class="numbered-item" value="2"><b>ระบบสุ่มวัตถุดิบอัจฉริยะตามภัยคุกคาม (Smart Threat-Aware Alchemy):</b> สายพานเข้าใจสถานการณ์สนามรบและหม้อต้ม ช่วยเสกของแก้ทางมอนสเตอร์ตัวหน้าสุดได้อย่างแม่นยำ ไม่ต้องพึ่งพาโชคเพียงอย่างเดียว</li>
+<li class="numbered-item" value="3"><b>งานศิลปะแฟนตาซี 2 มิติและเอนจินเสียงสังเคราะห์:</b> ภาพประกอบ Cel-shaded โทนอบอุ่น แอนิเมชันโค้งพาราโบลาพร้อมหางละอองเวทมนตร์ และดนตรีประกอบสังเคราะห์สไตล์เซลติกและทาเวิร์นที่สร้างขึ้นด้วยโค้ด Java แท้ๆ</li>
+<li class="numbered-item" value="4"><b>ความสมบูรณ์แบบของหลักการ OOP:</b> ทุกองค์ประกอบสะท้อน 4 เสาหลักของ OOP และ Design Patterns อย่างเป็นรูปธรรม โค้ดสะอาด แบ่งโมดูลชัดเจน และปฏิบัติตามมาตรฐานระดับมืออาชีพ</li>
+<hr class="divider"/>
+<h3 class="section-title">3.3 คำแนะนำสำหรับผู้สอนที่อยากให้อธิบาย หรือที่เรียนแล้วไม่เข้าใจ หรืออยากให้เพิ่มสำหรับน้อง ๆ รุ่นต่อไป</h3>
+<div class="callout-box"><b>[ส่วนบันทึกความคิดเห็นและข้อเสนอแนะของผู้เรียน]</b></div>
+<div class="callout-box"><i>สามารถระบุความคิดเห็นส่วนตัวเพิ่มเติมได้ตามความรู้สึกของผู้เรียน โดยมีแนวทางข้อเสนอแนะเบื้องต้นดังนี้:</i></div>
+<li class="numbered-item" value="1"><b>ข้อเสนอแนะด้านเนื้อหาที่อยากให้เพิ่มในคาบเรียน:</b></li>
+<li class="bullet-item">อยากให้เพิ่มการสอนเรื่อง <b>Game Loop Architecture &amp; Graphics2D Double Buffering</b> ในรายวิชา เพื่อให้นักศึกษาได้เห็นภาพการประยุกต์ใช้ OOP ในระบบงานที่ต้องประมวลผลแบบเรียลไทม์ 60 FPS</li>
+<li class="bullet-item">อยากให้มีการอธิบายเรื่อง <b>Threading &amp; Concurrency ใน Swing (Event Dispatch Thread: EDT)</b> ร่วมกับการจัดการเธรดเบื้องหลัง (Background Daemon Threads) เช่น การเล่นเสียงดนตรีประกอบไม่ให้ไปบล็อกการตอบสนองของหน้าจอ</li>
+<li class="numbered-item" value="2"><b>ข้อคิดเห็นและความประทับใจส่วนตัวต่อรายวิชา:</b></li>
+<li class="bullet-item"><code class="inline-code">[...ระบุความคิดเห็นส่วนตัวเพิ่มเติม เช่น ความรู้สึกหลังทำโปรเจกต์เสร็จ หรือสิ่งที่ประทับใจในการเรียนวิชานี้...]</code></li>
+</body>
+</html>
