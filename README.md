@@ -169,10 +169,12 @@
 
 ## 8. โครงสร้างโปรเจกต์และเอกสาร (Project Structure & Docs)
 
-- `src/main/java/com/potionpanic/` — ซอร์สโค้ดภาษา Java ทั้งหมด (45 คลาส)
+- `src/main/java/com/potionpanic/` — ซอร์สโค้ดภาษา Java ทั้งหมด
 - `src/main/resources/images/` — รูปภาพและกราฟิก 2D ความละเอียดสูงในเกม
 - `pom.xml` — ไฟล์ตั้งค่า Maven Dependencies และ Maven Compiler Plugin
 - `run.sh` — สคริปต์สำหรับคอมไพล์และเปิดรันตัวเกมอัตโนมัติ
-- `POTION_PANIC_REPORT_WORD.md` — เอกสารรายงานโครงงานฉบับสมบูรณ์ (บทที่ 1 ถึง บทที่ 5)
+- `POTION_PANIC_REPORT.pdf` — รายงานโครงงานฉบับสมบูรณ์ (PDF)
+- `POTION_PANIC_REPORT_WORD.md` — เอกสารรายงานโครงงานในรูปแบบ Markdown
+- `CLASS_DIAGRAM_MODULAR.md` — แผนภาพ Class Diagram แยก 3 ส่วนย่อยตามที่แสดงในเล่มรายงาน
 - `CLASS_DIAGRAM.md` — แผนภาพความสัมพันธ์และโครงสร้างคลาสเชิงวัตถุ (OOP Architecture)
 
