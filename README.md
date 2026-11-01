@@ -174,7 +174,6 @@
 - `pom.xml` — ไฟล์ตั้งค่า Maven Dependencies และ Maven Compiler Plugin
 - `run.sh` — สคริปต์สำหรับคอมไพล์และเปิดรันตัวเกมอัตโนมัติ
 - `POTION_PANIC_REPORT.pdf` — รายงานโครงงานฉบับสมบูรณ์ (PDF)
-- `POTION_PANIC_REPORT_WORD.md` — เอกสารรายงานโครงงานในรูปแบบ Markdown
 - `CLASS_DIAGRAM_MODULAR.md` — แผนภาพ Class Diagram แยก 3 ส่วนย่อยตามที่แสดงในเล่มรายงาน
 - `CLASS_DIAGRAM.md` — แผนภาพความสัมพันธ์และโครงสร้างคลาสเชิงวัตถุ (OOP Architecture)
 
