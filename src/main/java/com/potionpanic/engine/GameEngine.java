@@ -3,6 +3,7 @@ package com.potionpanic.engine;
 import com.potionpanic.audio.SoundManager;
 import com.potionpanic.entity.Projectile;
 import com.potionpanic.entity.Tower;
+import com.potionpanic.entity.VisualEffect;
 import com.potionpanic.entity.monster.Monster;
 import com.potionpanic.entity.potion.Potion;
 import com.potionpanic.item.Cauldron;
@@ -11,12 +12,15 @@ import com.potionpanic.item.IngredientType;
 import com.potionpanic.item.PotionRack;
 import com.potionpanic.util.Constants;
 
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * เอนจินหลักควบคุมลอจิกและสถานะทั้งหมดของเกม (Game Engine)
- * จัดการระบบด่าน (Stage Progression), การอัปเกรดเวทมนตร์, Combo Streak, และการประเมินดาว (1-3 Stars)
+ * จัดการระบบด่าน (Stage Progression), การอัปเกรดเวทมนตร์, Combo Streak, การประเมินดาว (1-3 Stars)
+ * และจัดการวิชวลเอฟเฟกต์ (Visual Effects) บนสนามรบ
  */
 public class GameEngine {
 
@@ -35,15 +39,23 @@ public class GameEngine {
 
     private final List<Monster> activeMonsters = new ArrayList<>();
     private final List<Projectile> activeProjectiles = new ArrayList<>();
+    private final List<VisualEffect> activeEffects = new ArrayList<>();
 
     private GameState state = GameState.PLAYING;
     private int score = 0;
     private boolean recipeBookOpen = false;
 
+    // ระบบหน้าจอสั่นสะเทือน (Screen Shake)
+    private double screenShakeTimer = 0.0;
+    private double screenShakeIntensity = 0.0;
+    private int lastReportedWave = 0;
+
     // ระบบ Stage & Progression
     private int currentStage = 1;
     private StageConfig currentStageConfig;
     private int earnedStars = 0;
+    private int newStarsGained = 0;
+    private int endlessStarsEarned = 0;
 
     // ระบบ Combo Streak
     private int comboCount = 0;
@@ -54,8 +66,8 @@ public class GameEngine {
         this.currentStageConfig = StageConfig.forStage(1);
         this.tower = new Tower(Constants.TOWER_MAX_HP, 40, Constants.MONSTER_LANE_Y - 90);
         this.belt = new ConveyorBelt();
-        this.cauldron = new Cauldron(160, Constants.ZONE_BOT_Y + 15);
-        this.potionRack = new PotionRack(355, Constants.ZONE_BOT_Y + 25);
+        this.cauldron = new Cauldron(115, Constants.ZONE_BOT_Y + 22);
+        this.potionRack = new PotionRack(335, Constants.ZONE_BOT_Y + 25);
         this.waveManager = new WaveManager(currentStageConfig);
         startStage(1);
     }
@@ -85,8 +97,10 @@ public class GameEngine {
 
         activeMonsters.clear();
         activeProjectiles.clear();
+        activeEffects.clear();
 
         waveManager.setStage(currentStageConfig);
+        belt.rerollAll(activeMonsters, cauldron.getIngredients(), waveManager.getUpcomingWeaknesses());
 
         score = 0;
         comboCount = 0;
@@ -94,6 +108,11 @@ public class GameEngine {
         earnedStars = 0;
         state = GameState.PLAYING;
         recipeBookOpen = false;
+        lastReportedWave = 0;
+        screenShakeTimer = 0.0;
+
+        // เริ่มเพลงศึกต่อสู้
+        SoundManager.getInstance().playBattleBgm();
     }
 
     /**
@@ -115,6 +134,14 @@ public class GameEngine {
             return;
         }
 
+        // อัปเดต Screen Shake
+        if (screenShakeTimer > 0) {
+            screenShakeTimer -= dt;
+            if (screenShakeTimer <= 0) {
+                screenShakeIntensity = 0.0;
+            }
+        }
+
         // อัปเดต Combo Timer
         if (comboTimer > 0) {
             comboTimer -= dt;
@@ -123,24 +150,44 @@ public class GameEngine {
             }
         }
 
-        // 1. อัปเดตสายพานและหม้อต้ม
-        belt.update(dt);
+        // 1. อัปเดตสายพานและหม้อต้ม (ส่งบริบทมอนสเตอร์ในสนามเพื่อการสุ่มอัจฉริยะ)
+        belt.update(dt, activeMonsters, cauldron.getIngredients(), waveManager.getUpcomingWeaknesses());
         cauldron.update(dt);
 
-        // 2. อัปเดตกระสุนขวดยาที่ลอยอยู่
+        // 2. อัปเดตกระสุนขวดยาที่ลอยอยู่ (ส่ง activeEffects เข้าไปด้วย)
         for (Projectile p : activeProjectiles) {
-            p.update(dt, activeMonsters);
+            p.update(dt, activeMonsters, activeEffects);
         }
         activeProjectiles.removeIf(Projectile::isDead);
 
-        // 3. อัปเดตมอนสเตอร์ในฉาก
+        // 3. อัปเดตวิชวลเอฟเฟกต์ (วงระเบิด, บ่อน้ำยา, สายฟ้าชิ่ง)
+        for (VisualEffect eff : activeEffects) {
+            eff.update(dt);
+        }
+        activeEffects.removeIf(VisualEffect::isExpired);
+
+        // 4. อัปเดตมอนสเตอร์ในฉาก
+        int oldTowerHp = tower.getHp();
         for (Monster m : activeMonsters) {
             m.update(dt, tower);
         }
+        if (tower.getHp() < oldTowerHp) {
+            double currentHpRatio = (double) tower.getHp() / tower.getMaxHp();
+            // สั่นเตือนเฉพาะตอนหอคอยกำลังจะพัง (เลือดต่ำกว่า 35%)
+            if (currentHpRatio <= 0.35) {
+                triggerScreenShake(5.0, 0.25);
+            }
+        }
+
+        // เรียงลำดับมอนสเตอร์ตามแกน Y (Depth Sorting: ตัวอยู่บนวาดก่อน ตัวอยู่ล่างวาดทับ)
+        activeMonsters.sort(Comparator.comparingDouble(Monster::getY));
 
         // กำจัดมอนสเตอร์ที่ตายและเพิ่มคะแนนตาม Combo
         activeMonsters.removeIf(m -> {
             if (m.isDead()) {
+                // เอฟเฟกต์แสงสลายตัวของมอนสเตอร์
+                activeEffects.add(VisualEffect.createDeathBurst(m.getX() + m.getWidth() / 2.0, m.getY() + m.getHeight() / 2.0, m.getWeakness().getColor()));
+
                 comboCount++;
                 comboTimer = maxComboTime;
                 int bonusMultiplier = Math.min(5, comboCount);
@@ -153,10 +200,17 @@ public class GameEngine {
             return false;
         });
 
-        // 4. อัปเดต Wave Manager
+        // 5. อัปเดต Wave Manager
+        int oldWave = waveManager.getCurrentWave();
         waveManager.update(dt, activeMonsters);
+        int newWave = waveManager.getCurrentWave();
+        if (newWave != lastReportedWave && newWave > 0) {
+            lastReportedWave = newWave;
+            String sub = currentStageConfig.isEndless() ? "โหมดเอาชีวิตรอดไม่รู้จบ!" : ("เวฟที่ " + newWave + " จาก " + waveManager.getTotalWaves());
+            activeEffects.add(VisualEffect.createWaveBanner("WAVE " + newWave + " START!", sub));
+        }
 
-        // 5. ตรวจสอบการเตือนภัยเมื่อเลือดหอคอยต่ำกว่า 35% (Pulsing Heartbeat)
+        // 6. ตรวจสอบการเตือนภัยเมื่อเลือดหอคอยต่ำกว่า 35%
         double hpRatio = (double) tower.getHp() / tower.getMaxHp();
         if (state == GameState.PLAYING && hpRatio < 0.35 && !tower.isDead()) {
             SoundManager.getInstance().updateLowHpAlert(true);
@@ -164,16 +218,23 @@ public class GameEngine {
             SoundManager.getInstance().updateLowHpAlert(false);
         }
 
-        // 6. ตรวจสอบเงื่อนไขแพ้ / ชนะ
+        // 7. ตรวจสอบเงื่อนไขแพ้ / ชนะ
         if (tower.isDead()) {
             state = GameState.GAME_OVER;
+            triggerScreenShake(7.5, 0.40);
             SoundManager.getInstance().updateLowHpAlert(false);
+            SoundManager.getInstance().stopBgm();
             SoundManager.getInstance().playDefeat();
+            if (currentStageConfig.isEndless()) {
+                int wavesCleared = Math.max(0, waveManager.getCurrentWave() - 1);
+                endlessStarsEarned = ProfileManager.getInstance().recordEndlessProgress(wavesCleared);
+            }
         } else if (waveManager.isAllCompleted() && activeMonsters.isEmpty()) {
             state = GameState.VICTORY;
             SoundManager.getInstance().updateLowHpAlert(false);
+            SoundManager.getInstance().stopBgm();
             earnedStars = calculateStarsEarned();
-            ProfileManager.getInstance().recordStageClear(currentStage, earnedStars);
+            newStarsGained = ProfileManager.getInstance().recordStageClear(currentStage, earnedStars);
             SoundManager.getInstance().playVictory();
         }
     }
@@ -186,7 +247,22 @@ public class GameEngine {
         IngredientType item = belt.grab(slotIndex);
         if (item != null) {
             cauldron.addIngredient(item);
+
+            // เอฟเฟกต์วัตถุดิบลอยโค้งจากสายพานลงหม้อต้ม
+            double startX = Constants.BELT_START_X + slotIndex * (Constants.BELT_SLOT_SIZE + Constants.BELT_SLOT_GAP) + 38;
+            double startY = Constants.ZONE_MID_Y + 50;
+            double targetX = cauldron.getX() + 70;
+            double targetY = cauldron.getY() + 45;
+            activeEffects.add(VisualEffect.createFlyingItem(item.getImage(), startX, startY, targetX, targetY));
         }
+    }
+
+    /**
+     * สุ่มวัตถุดิบใหม่ทั้งสายพาน (Reroll กด [F])
+     */
+    public boolean rerollBelt() {
+        if (state != GameState.PLAYING || recipeBookOpen) return false;
+        return belt.rerollAll(activeMonsters, cauldron.getIngredients(), waveManager.getUpcomingWeaknesses());
     }
 
     /**
@@ -196,8 +272,47 @@ public class GameEngine {
         if (state != GameState.PLAYING || recipeBookOpen) return;
         Potion potion = cauldron.brew();
         if (potion != null) {
+            // ตรวจสอบสภาวะคับขัน (เลือดหอคอย <= 50% หรือ มอนสเตอร์ >= 3 ตัว หรือ มีบอส)
+            boolean isClutch = (tower.getHp() <= tower.getMaxHp() * 0.5) ||
+                               (activeMonsters.size() >= 3) ||
+                               activeMonsters.stream().anyMatch(m -> m instanceof com.potionpanic.entity.monster.ChaosBoss);
+
+            // สุ่มโอกาสเกิดยาระเบิดมหาเวท (Miracle Brew - RARE!)
+            if (com.potionpanic.item.RecipeBook.shouldTriggerMiracleExplosive(isClutch)) {
+                potion = new com.potionpanic.entity.potion.ExplosivePotion();
+                SoundManager.getInstance().playCritical();
+                activeEffects.add(VisualEffect.createWaveBanner("MIRACLE BREW!", "แจ็กพอต! สุ่มได้ยาระเบิดมหาเวท (RARE)"));
+            }
+
             potionRack.addPotion(potion);
+
+            // เอฟเฟกต์ขวดยาลอยจากหม้อต้มเข้าสู่ชั้นวางยา
+            double startX = cauldron.getX() + 70;
+            double startY = cauldron.getY() + 40;
+            double targetX = potionRack.getX() + 80;
+            double targetY = potionRack.getY() + 45;
+            activeEffects.add(VisualEffect.createFlyingItem(potion.getImage(), startX, startY, targetX, targetY));
         }
+    }
+
+    public void triggerScreenShake(double intensity, double duration) {
+        this.screenShakeIntensity = intensity;
+        this.screenShakeTimer = duration;
+    }
+
+    public Point getScreenShakeOffset() {
+        if (screenShakeTimer <= 0) return new Point(0, 0);
+        int ox = (int) ((Math.random() - 0.5) * screenShakeIntensity * 2.0);
+        int oy = (int) ((Math.random() - 0.5) * screenShakeIntensity * 2.0);
+        return new Point(ox, oy);
+    }
+
+    public double getScreenShakeTimer() {
+        return screenShakeTimer;
+    }
+
+    public double getScreenShakeIntensity() {
+        return screenShakeIntensity;
     }
 
     /**
@@ -205,10 +320,13 @@ public class GameEngine {
      */
     public boolean throwPotionAt(double targetX, double targetY) {
         if (state != GameState.PLAYING || recipeBookOpen) return false;
+        int currentIdx = potionRack.getSelectedIndex();
         Potion selected = potionRack.consumeSelected();
         if (selected != null) {
-            double startX = potionRack.getX() + 100;
-            double startY = potionRack.getY();
+            int slotIdx = (currentIdx >= 0) ? currentIdx : 0;
+            Point center = potionRack.getSlotCenter(slotIdx);
+            double startX = center.getX();
+            double startY = center.getY();
             activeProjectiles.add(new Projectile(selected, startX, startY, targetX, targetY));
             SoundManager.getInstance().playThrow();
             return true;
@@ -231,6 +349,7 @@ public class GameEngine {
     public WaveManager getWaveManager() { return waveManager; }
     public List<Monster> getActiveMonsters() { return activeMonsters; }
     public List<Projectile> getActiveProjectiles() { return activeProjectiles; }
+    public List<VisualEffect> getActiveEffects() { return activeEffects; }
     public GameState getState() { return state; }
     public void setState(GameState state) { this.state = state; }
     public int getScore() { return score; }
@@ -243,4 +362,6 @@ public class GameEngine {
     public int getCurrentStage() { return currentStage; }
     public StageConfig getCurrentStageConfig() { return currentStageConfig; }
     public int getEarnedStars() { return earnedStars; }
+    public int getNewStarsGained() { return newStarsGained; }
+    public int getEndlessStarsEarned() { return endlessStarsEarned; }
 }

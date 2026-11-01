@@ -24,6 +24,7 @@ public class VictoryPanel extends JPanel {
     private int finalScore = 0;
     private int earnedStars = 1;
     private int currentStage = 1;
+    private int newStarsGained = 0;
 
     // ปุ่มตัวเลือก
     private final Rectangle nextStageBtn = new Rectangle(480, 410, 320, 55);
@@ -38,10 +39,15 @@ public class VictoryPanel extends JPanel {
         initMouseListener();
     }
 
-    public void setResults(int score, int stars, int stage) {
+    public void setResults(int score, int stars, int stage, int newStarsGained) {
         this.finalScore = score;
         this.earnedStars = Math.max(1, Math.min(3, stars));
         this.currentStage = stage;
+        this.newStarsGained = newStarsGained;
+    }
+
+    public void setResults(int score, int stars, int stage) {
+        setResults(score, stars, stage, 0);
     }
 
     public void setFinalScore(int score) {
@@ -140,10 +146,13 @@ public class VictoryPanel extends JPanel {
 
         // คำอธิบายระดับดาว
         String starComment = switch (earnedStars) {
-            case 3 -> "สมบูรณ์แบบ! หอคอยไม่ได้รับความเสียหายแม้แต่น้อย (+3 ดาวสะสม)";
-            case 2 -> "ยอดเยี่ยม! หอคอยคงเหลือพลังชีวิตมากกว่า 50% (+2 ดาวสะสม)";
-            default -> "ผ่านด่านสำเร็จ! ปกป้องหอคอยจนหยดสุดท้าย (+1 ดาวสะสม)";
+            case 3 -> "สมบูรณ์แบบ! หอคอยไม่ได้รับความเสียหายแม้แต่น้อย";
+            case 2 -> "ยอดเยี่ยม! หอคอยคงเหลือพลังชีวิตมากกว่า 50%";
+            default -> "ผ่านด่านสำเร็จ! ปกป้องหอคอยจนหยดสุดท้าย";
         };
+        if (newStarsGained > 0) {
+            starComment += " (ได้รับดาวสะสมเพิ่ม +" + newStarsGained + " ดวง!)";
+        }
         g2.setFont(com.potionpanic.util.FontHelper.bold(15));
         g2.setColor(Color.WHITE);
         fm = g2.getFontMetrics();
@@ -160,7 +169,7 @@ public class VictoryPanel extends JPanel {
         int points = ProfileManager.getInstance().getStarPoints();
         g2.setFont(com.potionpanic.util.FontHelper.plain(14));
         g2.setColor(new Color(255, 235, 150));
-        String pointText = "(คุณมีดาวสำหรับอัปเกรดสะสมอยู่: " + points + " ดวง)";
+        String pointText = "(คุณมีดาวสำหรับอัปเกรดสะสมอยู่: " + points + " ดวง | จัดสรรหรือรีเซ็ตได้ที่ร้านค้า)";
         fm = g2.getFontMetrics();
         g2.drawString(pointText, (w - fm.stringWidth(pointText)) / 2, 365);
 
@@ -199,7 +208,7 @@ public class VictoryPanel extends JPanel {
         g.setStroke(new BasicStroke(2.5f));
         g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 16, 16);
 
-        g.setFont(new Font("SansSerif", Font.BOLD, 20));
+        g.setFont(com.potionpanic.util.FontHelper.bold(20));
         FontMetrics fm = g.getFontMetrics();
         int tx = rect.x + (rect.width - fm.stringWidth(text)) / 2;
         int ty = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();

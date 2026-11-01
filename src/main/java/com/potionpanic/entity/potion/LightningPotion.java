@@ -1,26 +1,35 @@
 package com.potionpanic.entity.potion;
 
+import com.potionpanic.entity.VisualEffect;
 import com.potionpanic.entity.monster.Monster;
 import com.potionpanic.util.ElementType;
 import com.potionpanic.util.StatusEffect;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * ยาสายฟ้า (Lightning Potion)
- * พลังระเบิดสายฟ้าความเสียหายสูงเป้าหมายเดี่ยวหรือกลุ่มแคบ พร้อมทำให้ชะงัก (Stun) 0.8 วินาที
+ * พลังระเบิดสายฟ้าความเสียหายสูง พร้อมสายฟ้าชิ่งและทำให้ชะงัก (Stun) 1.0 วินาที
  */
 public class LightningPotion extends Potion {
 
     public LightningPotion() {
-        super("ยาสายฟ้า (Lightning Potion)", "ดาเมจสูง + ทำให้มอนสเตอร์ชะงัก (Stun)",
-                ElementType.LIGHTNING, 45, new Color(255, 235, 59), "potion_lightning");
+        super("ยาสายฟ้า (Lightning Potion)", "ดาเมจสูง + สายฟ้าชิ่งช็อตชะงัก (Stun)",
+                ElementType.LIGHTNING, 48, new Color(255, 235, 59), "potion_lightning");
     }
 
     @Override
-    public void onImpact(double impactX, double impactY, List<Monster> allMonsters) {
-        double radius = 90.0 * globalRadiusMultiplier;
+    public double getRadius() {
+        return 100.0 * globalRadiusMultiplier;
+    }
+
+    @Override
+    public void onImpact(double impactX, double impactY, List<Monster> allMonsters, List<VisualEffect> effects) {
+        double radius = getRadius();
+        List<Monster> struck = new ArrayList<>();
+
         for (Monster m : allMonsters) {
             if (m.isDead()) continue;
             double dx = (m.getX() + m.getWidth() / 2.0) - impactX;
@@ -29,7 +38,17 @@ public class LightningPotion extends Potion {
 
             if (dist <= radius) {
                 m.takeDamage(baseDamage, element);
-                m.applyStatus(StatusEffect.STUN, 0.8); // ชะงัก 0.8 วินาที
+                m.applyStatus(StatusEffect.STUN, 1.0);
+                struck.add(m);
+            }
+        }
+
+        if (effects != null) {
+            effects.add(VisualEffect.createShockwave(impactX, impactY, radius, new Color(255, 238, 88)));
+            effects.add(VisualEffect.createSkyLightningStrike(impactX, impactY, radius));
+            effects.add(VisualEffect.createElementalSplash(impactX, impactY, new Color(255, 238, 88)));
+            if (!struck.isEmpty()) {
+                effects.add(VisualEffect.createChainLightning(impactX, impactY, struck, new Color(255, 255, 140)));
             }
         }
     }

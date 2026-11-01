@@ -3,12 +3,14 @@ package com.potionpanic.ui;
 import com.potionpanic.audio.SoundManager;
 import com.potionpanic.util.AssetLoader;
 import com.potionpanic.util.Constants;
+import com.potionpanic.util.FontHelper;
 import com.potionpanic.util.ScaleHelper;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -17,35 +19,40 @@ import java.util.Random;
 
 /**
  * หน้าจอเริ่มต้นของเกม (Main Menu)
- * รองรับการย่อ/ขยายเต็มจอ (Resolution-Independent Scaling 16:9)
+ * ภาพปกแฟนตาซีเต็มจอ (bg_main_menu) คุณภาพสูง
+ * พร้อมระบบเสียงเวทมนตร์ลึกลับ (Mystic Alchemist Chamber BGM) และไร้อีโมจิ 100%
  */
 public class MainMenuPanel extends JPanel {
     private final GameWindow window;
     private boolean showingHowToPlay = false;
 
     // ปุ่มไม้เมนู (พิกัดเสมือน 1280x720)
-    private final Rectangle startBtn = new Rectangle(500, 310, 280, 65);
-    private final Rectangle howToBtn = new Rectangle(500, 395, 280, 65);
+    private final Rectangle startBtn = new Rectangle(490, 375, 300, 68);
+    private final Rectangle howToBtn = new Rectangle(490, 465, 300, 68);
+    private final Rectangle soundBtn = new Rectangle(Constants.WINDOW_WIDTH - 66, 22, 42, 42);
+
+    private int mouseX = -1;
+    private int mouseY = -1;
+    private double animTime = 0.0;
 
     // ละอองเวทมนตร์ลอยในพื้นหลัง
     private final List<MagicParticle> particles = new ArrayList<>();
     private final Random rand = new Random();
-    private Timer animTimer;
+    private final Timer animTimer;
 
     public MainMenuPanel(GameWindow window) {
         this.window = window;
         setPreferredSize(new Dimension(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT));
         setBackground(Constants.COLOR_BG_DARK);
 
-        // สร้างอนุภาคประกายเวทมนตร์ 40 จุด
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 45; i++) {
             particles.add(new MagicParticle(rand.nextInt(Constants.WINDOW_WIDTH), rand.nextInt(Constants.WINDOW_HEIGHT)));
         }
 
         initMouseListener();
 
-        // แอนิเมชันละอองเวทมนตร์ 60 FPS
         animTimer = new Timer(16, e -> {
+            animTime += 0.016;
             for (MagicParticle p : particles) {
                 p.update();
             }
@@ -54,16 +61,45 @@ public class MainMenuPanel extends JPanel {
         animTimer.start();
     }
 
+    public void startAnim() {
+        if (!animTimer.isRunning()) animTimer.start();
+        SoundManager.getInstance().playMenuBgm();
+    }
+
+    public void stopAnim() {
+        if (animTimer.isRunning()) animTimer.stop();
+    }
+
     private void initMouseListener() {
-        addMouseListener(new MouseAdapter() {
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+            private void updateCoords(MouseEvent e) {
+                Point v = ScaleHelper.toVirtual(e.getX(), e.getY(), getWidth(), getHeight());
+                mouseX = v.x;
+                mouseY = v.y;
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                updateCoords(e);
+                repaint();
+            }
+
             @Override
             public void mousePressed(MouseEvent e) {
-                Point v = ScaleHelper.toVirtual(e.getX(), e.getY(), getWidth(), getHeight());
-                int mx = v.x;
-                int my = v.y;
+                updateCoords(e);
+                int mx = mouseX;
+                int my = mouseY;
 
                 if (showingHowToPlay) {
-                    showingHowToPlay = false; // คลิกที่ใดก็ได้เพื่อปิดหน้าต่างวิธีเล่น
+                    showingHowToPlay = false;
+                    SoundManager.getInstance().playGrab();
+                    repaint();
+                    return;
+                }
+
+                if (soundBtn.contains(mx, my)) {
+                    SoundManager.getInstance().toggleSound();
+                    SoundManager.getInstance().playGrab();
                     repaint();
                     return;
                 }
@@ -77,7 +113,10 @@ public class MainMenuPanel extends JPanel {
                     repaint();
                 }
             }
-        });
+        };
+
+        addMouseListener(mouseAdapter);
+        addMouseMotionListener(mouseAdapter);
     }
 
     @Override
@@ -85,13 +124,14 @@ public class MainMenuPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         int screenW = getWidth();
         int screenH = getHeight();
 
         // พื้นหลัง Letterbox สีมืด
-        g2.setColor(new Color(12, 10, 24));
+        g2.setColor(new Color(10, 8, 20));
         g2.fillRect(0, 0, screenW, screenH);
 
         double scale = ScaleHelper.getScale(screenW, screenH);
@@ -108,65 +148,100 @@ public class MainMenuPanel extends JPanel {
         int w = Constants.WINDOW_WIDTH;
         int h = Constants.WINDOW_HEIGHT;
 
-        // พื้นหลังท้องฟ้าค่ำคืนและดวงดาว
-        GradientPaint bgGrad = new GradientPaint(0, 0, new Color(12, 10, 28), 0, h, new Color(35, 20, 48));
-        g2.setPaint(bgGrad);
-        g2.fillRect(0, 0, w, h);
-
-        // วาดดวงจันทร์และหอคอยด้านข้าง
-        g2.setColor(new Color(255, 245, 200, 200));
-        g2.fillOval(w - 240, 40, 80, 80);
-        g2.setColor(new Color(15, 12, 32));
-        g2.fillOval(w - 260, 35, 75, 75);
-
-        // วาดหอคอย
-        BufferedImage tower = AssetLoader.getImage("tower");
-        if (tower != null) {
-            g2.drawImage(tower, w - 280, h - 350, 200, 300, null);
-            g2.drawImage(tower, 60, h - 320, 180, 270, null);
+        // 1. วาดภาพพื้นหลังห้องปรุงยาเวทมนตร์เต็มจอ (bg_main_menu)
+        BufferedImage bg = AssetLoader.getImage("bg_main_menu");
+        if (bg != null) {
+            g2.drawImage(bg, 0, 0, w, h, null);
+            // เพิ่มความลึกด้วยม่านเงาดำบางๆ
+            g2.setColor(new Color(10, 8, 20, 85));
+            g2.fillRect(0, 0, w, h);
+        } else {
+            GradientPaint bgGrad = new GradientPaint(0, 0, new Color(12, 10, 28), 0, h, new Color(35, 20, 48));
+            g2.setPaint(bgGrad);
+            g2.fillRect(0, 0, w, h);
         }
 
-        // วาดอนุภาคประกายเวทมนตร์
+        // 2. วาดละอองเวทมนตร์ลอย
         for (MagicParticle p : particles) {
             p.render(g2);
         }
 
-        // หัวข้อหลักเกม "POTION PANIC"
-        g2.setFont(com.potionpanic.util.FontHelper.bold(52));
-        g2.setColor(new Color(0, 0, 0, 180));
-        g2.drawString("POTION PANIC", w / 2 - 200, 172);
+        // 3. วาดปุ่มปิด/เปิดเสียง (Sound Mute Button) ที่มุมขวาบน
+        drawSoundButton(g2);
 
-        GradientPaint titleGrad = new GradientPaint(0, 120, new Color(255, 112, 67), 0, 180, Constants.COLOR_ACCENT_GOLD);
-        g2.setPaint(titleGrad);
-        g2.drawString("POTION PANIC", w / 2 - 204, 170);
+        // 4. ชื่อเกม "POTION PANIC" แบบตัวอักษรลอย 3D ไม่มีกรอบ พร้อมลูกเล่นเปลี่ยนสีเรียงตัวอักษรตามสียา
+        g2.setFont(FontHelper.bold(68));
+        FontMetrics mfm = g2.getFontMetrics();
+        String mainTitle = "POTION PANIC";
+        int totalTitleW = mfm.stringWidth(mainTitle);
+        int curX = (w - totalTitleW) / 2;
+        int titleY = 175;
 
-        // ชื่อไทย "อลวนคนปรุงยา"
-        g2.setFont(com.potionpanic.util.FontHelper.bold(24));
-        g2.setColor(new Color(129, 212, 250));
-        String sub = "( อลวนคนปรุงยา )";
-        FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(sub, (w - fm.stringWidth(sub)) / 2, 215);
+        // วาดแต่ละตัวอักษรด้วยเงา 3D และสีขวดยาที่ไหลเวียนนุ่มนวล
+        double colorShift = animTime * 1.8;
+        int paletteLen = POTION_RAINBOW.length;
 
-        // วาดปุ่มไม้ "เริ่มเกม" และ "วิธีเล่น"
-        drawWoodenButton(g2, startBtn, "เริ่มเกม", new Color(110, 75, 45));
-        drawWoodenButton(g2, howToBtn, "วิธีเล่น", new Color(90, 60, 35));
+        for (int i = 0; i < mainTitle.length(); i++) {
+            char ch = mainTitle.charAt(i);
+            String chStr = String.valueOf(ch);
+            int charW = mfm.charWidth(ch);
 
-        // วาดหม้อต้มยาตรงกลางล่าง
-        BufferedImage cImg = AssetLoader.getImage("cauldron");
-        if (cImg != null) {
-            g2.drawImage(cImg, w / 2 - 70, h - 180, 140, 140, null);
-        }
+            if (ch != ' ') {
+                // คำนวณสีประจำตัวอักษรแบบค่อยๆ เหลื่อมสีตามลำดับ
+                double phase = (colorShift + i * 0.6) % paletteLen;
+                if (phase < 0) phase += paletteLen;
+                int idx1 = (int) phase;
+                int idx2 = (idx1 + 1) % paletteLen;
+                float blend = (float) (phase - idx1);
 
-        // วาดขวดยาประดับ 4 ขวด
-        String[] flasks = {"potion_fire", "potion_ice", "potion_poison", "potion_lightning"};
-        for (int i = 0; i < flasks.length; i++) {
-            BufferedImage pImg = AssetLoader.getImage(flasks[i]);
-            if (pImg != null) {
-                g2.drawImage(pImg, w / 2 - 170 + i * 90, h - 90, 50, 50, null);
+                Color c1 = POTION_RAINBOW[idx1];
+                Color c2 = POTION_RAINBOW[idx2];
+                int redVal = Math.min(255, Math.max(0, (int) (c1.getRed() * (1 - blend) + c2.getRed() * blend)));
+                int greenVal = Math.min(255, Math.max(0, (int) (c1.getGreen() * (1 - blend) + c2.getGreen() * blend)));
+                int blueVal = Math.min(255, Math.max(0, (int) (c1.getBlue() * (1 - blend) + c2.getBlue() * blend)));
+                Color faceColor = new Color(redVal, greenVal, blueVal);
+                Color depthColor = new Color(Math.max(10, redVal / 3), Math.max(10, greenVal / 3), Math.max(10, blueVal / 3));
+
+                // ชั้นที่ 1: เงาลึกสีดำ (Deep Shadow) ให้ตัวหนังสือลอยเด่นออกมาจากพื้นหลัง
+                g2.setColor(new Color(0, 0, 0, 230));
+                g2.drawString(chStr, curX + 4, titleY + 6);
+
+                // ชั้นที่ 2: ความหนา 3D (Extrusion depth)
+                g2.setColor(depthColor);
+                g2.drawString(chStr, curX + 2, titleY + 3);
+
+                // ชั้นที่ 3: ออร่าเรืองแสงสีประจำยา (Magical Glow)
+                g2.setColor(new Color(redVal, greenVal, blueVal, 70));
+                g2.drawString(chStr, curX - 1, titleY - 1);
+                g2.drawString(chStr, curX + 1, titleY - 1);
+
+                // ชั้นที่ 4: หน้าตัดตัวอักษรสีสดใส (Floating Face)
+                g2.setColor(faceColor);
+                g2.drawString(chStr, curX, titleY);
             }
+            curX += charW;
         }
 
-        // แสดงหน้าต่างวิธีเล่น
+        // ชื่อภาษาไทย "( อลวนคนปรุงยา )" สีทองนุ่มนวล
+        g2.setFont(FontHelper.bold(22));
+        String sub = "( อลวนคนปรุงยา )";
+        FontMetrics sfm = g2.getFontMetrics();
+        int sx = (w - sfm.stringWidth(sub)) / 2;
+        int subY = 215;
+
+        g2.setColor(new Color(0, 0, 0, 200));
+        g2.drawString(sub, sx + 2, subY + 2);
+        g2.setColor(new Color(255, 225, 140));
+        g2.drawString(sub, sx, subY);
+
+        // 5. วาดปุ่มไม้ "เริ่มเกม" และ "ตำราวิธีเล่น" พร้อม Hover Animation
+        boolean startHover = startBtn.contains(mouseX, mouseY);
+        boolean howToHover = howToBtn.contains(mouseX, mouseY);
+
+        drawHoverButton(g2, startBtn, "เริ่มเกม", new Color(175, 85, 25), startHover);
+        drawHoverButton(g2, howToBtn, "ตำราวิธีเล่น & สารานุกรม", new Color(75, 50, 95), howToHover);
+
+        // 6. แสดงหน้าต่างวิธีเล่นเต็มจอ
         if (showingHowToPlay) {
             RecipeBookDialog.render(g2, w, h);
         }
@@ -175,29 +250,83 @@ public class MainMenuPanel extends JPanel {
         g2.setClip(origClip);
     }
 
-    private void drawWoodenButton(Graphics2D g, Rectangle rect, String text, Color baseColor) {
-        g.setColor(new Color(0, 0, 0, 140));
-        g.fillRoundRect(rect.x + 4, rect.y + 6, rect.width, rect.height, 18, 18);
+    // สีประจำขวดยาแต่ละประเภทสำหรับลูกเล่นเปลี่ยนสีตัวอักษร
+    private static final Color[] POTION_RAINBOW = {
+        new Color(255, 85, 85),    // ยาเพลิง (Fire Red)
+        new Color(75, 195, 255),   // ยาน้ำแข็ง (Ice Blue)
+        new Color(105, 240, 140),  // ยาพิษ (Poison Green)
+        new Color(30, 245, 225),   // ยาเยือกแข็งพิษ (Frost-Venom Cyan)
+        new Color(255, 225, 65),   // ยาสายฟ้า (Lightning Yellow)
+        new Color(225, 110, 255)   // ยาระเบิดเวทมนตร์ (Explosive Purple)
+    };
 
-        g.setColor(baseColor);
-        g.fillRoundRect(rect.x, rect.y, rect.width, rect.height, 18, 18);
+    private void drawSoundButton(Graphics2D g) {
+        boolean soundOn = SoundManager.getInstance().isSoundEnabled();
+        boolean hover = soundBtn.contains(mouseX, mouseY);
 
-        g.setColor(Constants.COLOR_ACCENT_GOLD);
-        g.setStroke(new BasicStroke(3));
-        g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 18, 18);
+        // พื้นหลังปุ่มกลมมนเรียบหรู
+        g.setColor(hover ? new Color(55, 40, 75, 240) : new Color(25, 18, 35, 210));
+        g.fillRoundRect(soundBtn.x, soundBtn.y, soundBtn.width, soundBtn.height, 12, 12);
+        g.setColor(hover ? Constants.COLOR_ACCENT_GOLD : new Color(130, 105, 165));
+        g.setStroke(new BasicStroke(hover ? 2.0f : 1.4f));
+        g.drawRoundRect(soundBtn.x, soundBtn.y, soundBtn.width, soundBtn.height, 12, 12);
 
-        g.setColor(new Color(230, 200, 120));
-        g.fillOval(rect.x + 8, rect.y + 8, 8, 8);
-        g.fillOval(rect.x + rect.width - 16, rect.y + 8, 8, 8);
-        g.fillOval(rect.x + 8, rect.y + rect.height - 16, 8, 8);
-        g.fillOval(rect.x + rect.width - 16, rect.y + rect.height - 16, 8, 8);
+        // ไอคอนลำโพงเวกเตอร์ (Vector Speaker Icon)
+        int cx = soundBtn.x + soundBtn.width / 2;
+        int cy = soundBtn.y + soundBtn.height / 2;
+        Color iconColor = soundOn ? (hover ? Color.WHITE : new Color(255, 225, 120)) : new Color(170, 150, 180);
+        g.setColor(iconColor);
 
-        g.setFont(new Font("SansSerif", Font.BOLD, 24));
+        // ตัวลำโพง (โคน + กรวย)
+        int spkLeft = cx - 10;
+        int spkTop = cy - 4;
+        g.fillRect(spkLeft, spkTop, 5, 8);
+
+        Polygon cone = new Polygon();
+        cone.addPoint(spkLeft + 5, spkTop);
+        cone.addPoint(spkLeft + 11, cy - 8);
+        cone.addPoint(spkLeft + 11, cy + 8);
+        cone.addPoint(spkLeft + 5, cy + 4);
+        g.fillPolygon(cone);
+
+        if (soundOn) {
+            // คลื่นเสียง 2 ระลอก
+            g.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g.drawArc(cx - 3, cy - 6, 12, 12, -45, 90);
+            g.drawArc(cx - 1, cy - 10, 18, 20, -45, 90);
+        } else {
+            // เส้นขีดฆ่าสีแดง (Mute Slash)
+            g.setColor(new Color(255, 90, 90));
+            g.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g.drawLine(cx - 9, cy - 9, cx + 9, cy + 9);
+        }
+    }
+
+    private void drawHoverButton(Graphics2D g, Rectangle rect, String text, Color baseColor, boolean hover) {
+        int expand = hover ? 3 : 0;
+        int rx = rect.x - expand;
+        int ry = rect.y - expand;
+        int rw = rect.width + expand * 2;
+        int rh = rect.height + expand * 2;
+
+        // เงาตกกระทบ
+        g.setColor(new Color(0, 0, 0, hover ? 190 : 140));
+        g.fillRoundRect(rx + 4, ry + 6, rw, rh, 18, 18);
+
+        // ตัวปุ่ม
+        g.setColor(hover ? baseColor.brighter() : baseColor);
+        g.fillRoundRect(rx, ry, rw, rh, 18, 18);
+
+        g.setColor(hover ? Color.WHITE : Constants.COLOR_ACCENT_GOLD);
+        g.setStroke(new BasicStroke(hover ? 3.0f : 2.2f));
+        g.drawRoundRect(rx, ry, rw, rh, 18, 18);
+
+        g.setFont(FontHelper.bold(22));
         FontMetrics fm = g.getFontMetrics();
-        int tx = rect.x + (rect.width - fm.stringWidth(text)) / 2;
-        int ty = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
+        int tx = rx + (rw - fm.stringWidth(text)) / 2;
+        int ty = ry + ((rh - fm.getHeight()) / 2) + fm.getAscent();
 
-        g.setColor(new Color(40, 20, 10));
+        g.setColor(new Color(0, 0, 0, 180));
         g.drawString(text, tx + 1, ty + 2);
         g.setColor(Color.WHITE);
         g.drawString(text, tx, ty);
@@ -214,7 +343,7 @@ public class MainMenuPanel extends JPanel {
             this.y = y;
             this.vy = -0.4 - Math.random() * 0.8;
             this.alpha = (float) (0.2 + Math.random() * 0.7);
-            Color[] colors = {new Color(255, 193, 7), new Color(76, 175, 80), new Color(33, 150, 243), new Color(244, 67, 54)};
+            Color[] colors = {new Color(255, 193, 7), new Color(76, 175, 80), new Color(33, 150, 243), new Color(244, 67, 54), new Color(171, 71, 188)};
             this.color = colors[(int) (Math.random() * colors.length)];
         }
 

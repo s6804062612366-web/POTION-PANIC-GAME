@@ -22,6 +22,8 @@ public class GameOverPanel extends JPanel {
     private final GameWindow window;
     private int finalScore = 0;
     private int currentStage = 1;
+    private int wavesSurvived = 0;
+    private int endlessStarsEarned = 0;
 
     private final Rectangle retryBtn = new Rectangle(480, 390, 320, 55);
     private final Rectangle stageSelectBtn = new Rectangle(480, 460, 320, 55);
@@ -35,13 +37,19 @@ public class GameOverPanel extends JPanel {
         initMouseListener();
     }
 
-    public void setFinalScore(int score, int stage) {
+    public void setFinalScore(int score, int stage, int waves, int endlessStars) {
         this.finalScore = score;
         this.currentStage = stage;
+        this.wavesSurvived = waves;
+        this.endlessStarsEarned = endlessStars;
+    }
+
+    public void setFinalScore(int score, int stage) {
+        setFinalScore(score, stage, 0, 0);
     }
 
     public void setFinalScore(int score) {
-        setFinalScore(score, 1);
+        setFinalScore(score, 1, 0, 0);
     }
 
     private void initMouseListener() {
@@ -122,14 +130,22 @@ public class GameOverPanel extends JPanel {
         StageConfig stageCfg = StageConfig.forStage(currentStage);
         g2.setFont(com.potionpanic.util.FontHelper.bold(20));
         g2.setColor(new Color(255, 200, 200));
-        String desc = "หอคอยเวทมนตร์ถูกทำลายใน " + stageCfg.getTitle();
+        String desc = stageCfg.isEndless()
+                ? ("การเอาชีวิตรอดสิ้นสุดลงในโหมด Endless (รอดได้ " + wavesSurvived + " เวฟ)")
+                : ("หอคอยเวทมนตร์ถูกทำลายใน " + stageCfg.getTitle());
         FontMetrics fm = g2.getFontMetrics();
         g2.drawString(desc, (w - fm.stringWidth(desc)) / 2, 220);
 
-        // คำแนะนำสำหรับผู้เล่น
+        // คำแนะนำสำหรับผู้เล่น หรือโบนัสดาวจาก Endless
         g2.setFont(com.potionpanic.util.FontHelper.plain(14));
         g2.setColor(new Color(255, 220, 180));
-        String tip = "ข้อแนะนำ: อัปเกรดพลังชีวิตหอคอย หรือความเร็วสายพานเพื่อรับมือกับฝูงมอนสเตอร์ได้ดีขึ้น";
+        String tip;
+        if (stageCfg.isEndless() && endlessStarsEarned > 0) {
+            tip = "คุณได้รับดาวโบนัสจากการเอาชีวิตรอด: +" + endlessStarsEarned + " ดวง!";
+            g2.setColor(Constants.COLOR_ACCENT_GOLD);
+        } else {
+            tip = "ข้อแนะนำ: อัปเกรดพลังชีวิตหอคอย หรือความเร็วสายพานเพื่อรับมือกับฝูงมอนสเตอร์ได้ดีขึ้น";
+        }
         fm = g2.getFontMetrics();
         g2.drawString(tip, (w - fm.stringWidth(tip)) / 2, 260);
 
@@ -160,7 +176,7 @@ public class GameOverPanel extends JPanel {
         g.setStroke(new BasicStroke(2.5f));
         g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 16, 16);
 
-        g.setFont(new Font("SansSerif", Font.BOLD, 20));
+        g.setFont(com.potionpanic.util.FontHelper.bold(20));
         FontMetrics fm = g.getFontMetrics();
         int tx = rect.x + (rect.width - fm.stringWidth(text)) / 2;
         int ty = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();

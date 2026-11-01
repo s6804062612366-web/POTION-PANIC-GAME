@@ -1,22 +1,33 @@
 package com.potionpanic.ui;
 
+import com.potionpanic.audio.SoundManager;
 import com.potionpanic.engine.GameEngine;
+import com.potionpanic.engine.StageConfig;
 import com.potionpanic.entity.Projectile;
+import com.potionpanic.entity.VisualEffect;
 import com.potionpanic.entity.monster.Monster;
 import com.potionpanic.entity.potion.Potion;
 import com.potionpanic.item.IngredientType;
+import com.potionpanic.util.AssetLoader;
 import com.potionpanic.util.Constants;
+import com.potionpanic.util.FontHelper;
 import com.potionpanic.util.ScaleHelper;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * หน้าจอการเล่นหลัก (Gameplay Panel)
- * แสดงผล 3 โซน (มอนสเตอร์บุกด้านบน, สายพานตรงกลาง, โต๊ะปรุงยาด้านล่าง)
- * รองรับคีย์ลัด [Q/W/E/R], [Backspace], Quick Recipe Board และระบบ Combo
+ * - แสดงภาพพื้นหลัง 3 โซน (bg_gameplay.png)
+ * - ป๊อปอัพสไลด์การ์ดสอนเล่นก่อนเริ่มด่าน (StageIntroOverlay)
+ * - ระบบตำรา 3 ส่วนผสมแบบภาพไอคอนบนกระดานด่วน
+ * - ระบบสั่นหน้าจอ (Screen Shake) และเอฟเฟกต์การเคลื่อนไหวเต็มรูปแบบ
+ * - ไร้อีโมจิ 100%
  */
 public class GameplayPanel extends JPanel {
     private final GameWindow window;
@@ -27,8 +38,22 @@ public class GameplayPanel extends JPanel {
     private int mouseX = 0;
     private int mouseY = 0;
 
-    // พิกัดป้ายคัมภีร์สูตรยาด่วน (คลิกเปิดสมุดเต็มจอได้)
-    private final Rectangle recipeBoardRect = new Rectangle(740, Constants.ZONE_BOT_Y + 12, 510, 226);
+    // ป๊อปอัพสอนสูตรก่อนเริ่มด่าน
+    private StageIntroOverlay introOverlay;
+
+    // หน้าต่างสมุดสูตรยาบนโต๊ะปรุงยา (เปิด/ปิดได้ตามสั่ง)
+    private boolean tableBookOpen = false;
+    private final Rectangle closedBookRect = new Rectangle(1005, Constants.ZONE_BOT_Y + 16, 215, 244);
+    private final Rectangle openBookRect = new Rectangle(710, Constants.ZONE_BOT_Y + 10, 545, 254);
+    private final Rectangle bookCloseBtnRect = new Rectangle(710 + 545 - 34, Constants.ZONE_BOT_Y + 18, 22, 22);
+
+    // พิกัดปุ่มสุ่มสายพาน [F]
+    private final Rectangle rerollBtnRect = new Rectangle(
+            Constants.BELT_START_X - 40 + (Constants.BELT_SLOT_SIZE + Constants.BELT_SLOT_GAP) * Constants.BELT_SLOTS_COUNT + 60 + 12,
+            Constants.ZONE_MID_Y + 30, 120, 98);
+
+    // ปุ่มเปิด-ปิดเสียง [M] (ไอคอนเวกเตอร์กะทัดรัด)
+    private final Rectangle soundBtnRect = new Rectangle(Constants.WINDOW_WIDTH - 54, 12, 38, 38);
 
     public GameplayPanel(GameWindow window, GameEngine engine) {
         this.window = window;
@@ -42,12 +67,24 @@ public class GameplayPanel extends JPanel {
         initGameLoop();
     }
 
+    public void showStageIntro(StageConfig config) {
+        this.introOverlay = new StageIntroOverlay(config);
+    }
+
     private void initListeners() {
-        // ดักจับการกดคีย์บอร์ด
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 int code = e.getKeyCode();
+
+                // ถ้าป๊อปอัพสไลด์สอนเล่นเปิดอยู่ ส่งคีย์ให้ป๊อปอัพจัดการก่อน
+                if (introOverlay != null && introOverlay.isActive()) {
+                    if (introOverlay.handleKeyPress(code)) {
+                        repaint();
+                        return;
+                    }
+                }
+
                 switch (code) {
                     case KeyEvent.VK_1 -> engine.grabIngredientToCauldron(0);
                     case KeyEvent.VK_2 -> engine.grabIngredientToCauldron(1);
@@ -57,6 +94,7 @@ public class GameplayPanel extends JPanel {
                     case KeyEvent.VK_SPACE -> engine.brewPotion();
                     case KeyEvent.VK_BACK_SPACE -> engine.getCauldron().removeLastIngredient();
                     case KeyEvent.VK_C -> engine.getCauldron().clear();
+                    case KeyEvent.VK_F -> engine.rerollBelt(); // สุ่มสายพานใหม่
 
                     // คีย์ลัดเลือกขวดยาในช่องพักยา [Q, W, E, R]
                     case KeyEvent.VK_Q -> engine.getPotionRack().selectSlot(0);
@@ -65,12 +103,14 @@ public class GameplayPanel extends JPanel {
                     case KeyEvent.VK_R -> engine.getPotionRack().selectSlot(3);
 
                     case KeyEvent.VK_TAB, KeyEvent.VK_H -> engine.toggleRecipeBook();
-                    case KeyEvent.VK_ESCAPE -> window.showScene("MENU");
+                    case KeyEvent.VK_ESCAPE -> {
+                        SoundManager.getInstance().stopBgm();
+                        window.showScene("MENU");
+                    }
                 }
             }
         });
 
-        // ดักจับการเคลื่อนที่และคลิกเมาส์ โดยแปลงพิกัดเข้าสู่ Virtual Coordinate (1280x720)
         MouseAdapter mouseAdapter = new MouseAdapter() {
             private void updateMouseCoords(MouseEvent e) {
                 Point v = ScaleHelper.toVirtual(e.getX(), e.getY(), getWidth(), getHeight());
@@ -95,16 +135,49 @@ public class GameplayPanel extends JPanel {
                 int mx = mouseX;
                 int my = mouseY;
 
+                // ถ้าป๊อปอัพสอนเล่นเปิดอยู่
+                if (introOverlay != null && introOverlay.isActive()) {
+                    if (introOverlay.handleMouseClick(mx, my)) {
+                        repaint();
+                        return;
+                    }
+                }
+
+                // ปุ่มสลับเสียง [M]
+                if (soundBtnRect.contains(mx, my)) {
+                    SoundManager.getInstance().toggleSound();
+                    SoundManager.getInstance().playGrab();
+                    repaint();
+                    return;
+                }
+
                 // ถ้าสมุดสูตรยาเต็มจอเปิดอยู่ คลิกที่ใดก็ได้เพื่อปิด
                 if (engine.isRecipeBookOpen()) {
                     engine.setRecipeBookOpen(false);
                     return;
                 }
 
-                // คลิกที่คัมภีร์สูตรยาเพื่อเปิดหน้าต่างสูตรยาเต็มจอ
-                if (recipeBoardRect.contains(mx, my)) {
-                    engine.toggleRecipeBook();
+                // คลิกที่ปุ่มสุ่มสายพานใหม่
+                if (rerollBtnRect.contains(mx, my)) {
+                    engine.rerollBelt();
                     return;
+                }
+
+                // คลิกเปิด / ปิดสมุดสูตรยาบนโต๊ะปรุงยา
+                if (tableBookOpen) {
+                    if (bookCloseBtnRect.contains(mx, my) || (openBookRect.contains(mx, my) && my < openBookRect.y + 36)) {
+                        tableBookOpen = false;
+                        SoundManager.getInstance().playGrab();
+                        repaint();
+                        return;
+                    }
+                } else {
+                    if (closedBookRect.contains(mx, my)) {
+                        tableBookOpen = true;
+                        SoundManager.getInstance().playGrab();
+                        repaint();
+                        return;
+                    }
                 }
 
                 // คลิกที่ชั้นวางยาเพื่อเลือกขวด
@@ -133,16 +206,23 @@ public class GameplayPanel extends JPanel {
 
             if (dt > 0.05) dt = 0.05;
 
-            engine.update(dt);
+            // ถ้าป๊อปอัพสอนเล่นเปิดอยู่ ให้หยุดเวลาเกมไว้
+            if (introOverlay != null && introOverlay.isActive()) {
+                introOverlay.update(dt);
+            } else {
+                engine.update(dt);
+            }
 
             // ตรวจสอบการเปลี่ยนหน้าต่างเมื่อชนะหรือแพ้
             if (engine.getState() == GameEngine.GameState.GAME_OVER) {
                 gameLoopTimer.stop();
-                window.getGameOverPanel().setFinalScore(engine.getScore(), engine.getCurrentStage());
+                window.getGameOverPanel().setFinalScore(engine.getScore(), engine.getCurrentStage(),
+                        Math.max(0, engine.getWaveManager().getCurrentWave() - 1), engine.getEndlessStarsEarned());
                 window.showScene("GAME_OVER");
             } else if (engine.getState() == GameEngine.GameState.VICTORY) {
                 gameLoopTimer.stop();
-                window.getVictoryPanel().setResults(engine.getScore(), engine.getEarnedStars(), engine.getCurrentStage());
+                window.getVictoryPanel().setResults(engine.getScore(), engine.getEarnedStars(), engine.getCurrentStage(),
+                        engine.getNewStarsGained());
                 window.showScene("VICTORY");
             }
 
@@ -168,13 +248,14 @@ public class GameplayPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         int screenW = getWidth();
         int screenH = getHeight();
 
-        // ระบายสีพื้นหลังรอบนอก (Pillarbox / Letterbox)
-        g2.setColor(new Color(12, 10, 24));
+        // ระบายสีพื้นหลังรอบนอก (Letterbox)
+        g2.setColor(new Color(10, 8, 20));
         g2.fillRect(0, 0, screenW, screenH);
 
         double scale = ScaleHelper.getScale(screenW, screenH);
@@ -185,55 +266,68 @@ public class GameplayPanel extends JPanel {
         g2.clipRect(ox, oy, (int) Math.round(Constants.WINDOW_WIDTH * scale), (int) Math.round(Constants.WINDOW_HEIGHT * scale));
 
         AffineTransform origTx = g2.getTransform();
-        g2.translate(ox, oy);
+
+        // เพิ่มการสั่นสะเทือนหน้าจอ (Screen Shake)
+        Point shake = engine.getScreenShakeOffset();
+        g2.translate(ox + shake.x * scale, oy + shake.y * scale);
         g2.scale(scale, scale);
 
         // --- เริ่มต้นการเรนเดอร์ในพิกัดเสมือน 1280 x 720 ---
 
-        // 1. วาดพื้นหลังทั้ง 3 โซน
+        // 1. วาดภาพพื้นหลัง 3 โซน (bg_gameplay.png หรือกราฟิกเสริม)
         drawBackgroundZones(g2);
 
-        // 2. วาดหอคอย
+        // 2. วาดวิชวลเอฟเฟกต์บนพื้นผิวถนน (บ่อน้ำยา, คลื่นกระแทก)
+        for (VisualEffect eff : engine.getActiveEffects()) {
+            eff.render(g2);
+        }
+
+        // 3. วาดหอคอย
         engine.getTower().render(g2);
 
-        // 3. วาดมอนสเตอร์ในเลนบน
+        // 4. วาดมอนสเตอร์ในเลนบน (เรียงตามลำดับแกน Y)
         for (Monster m : engine.getActiveMonsters()) {
             m.render(g2);
         }
 
-        // 4. วาดสายพานลำเลียงในโซนกลาง
+        // 5. วาดสายพานลำเลียงในโซนกลาง
         engine.getBelt().render(g2);
 
-        // 5. วาดโต๊ะปรุงยา หม้อต้ม และชั้นวางยาในโซนล่าง
+        // 6. วาดโต๊ะปรุงยา หม้อต้ม และชั้นวางยาในโซนล่าง
         engine.getCauldron().render(g2);
         engine.getPotionRack().render(g2);
 
-        // 6. วาดคัมภีร์สูตรยาด่วนถาวรบนโต๊ะ (Quick Recipe Board)
+        // 7. วาดคัมภีร์สูตรยาด่วนถาวรบนโต๊ะ (Quick Recipe Board) ด้วยภาพไอคอน
         drawQuickRecipeBoard(g2);
 
-        // 7. วาดขวดยาที่ลอยอยู่ในอากาศ
+        // 8. วาดขวดยาที่ลอยอยู่ในอากาศ
         for (Projectile p : engine.getActiveProjectiles()) {
             p.render(g2);
         }
 
-        // 8. วาด HUD ด้านบน (Wave, Score, Combo Streak)
+        // 9. วาด HUD ด้านบน (Wave, Score, Combo Streak, Mute Button)
         drawTopHUD(g2);
 
-        // 9. วาดเป้าเล็งเมาส์ (Aiming Crosshair) เมื่อมียาพร้อมปา
+        // 10. วาดเป้าเล็งเมาส์ (Aiming Crosshair) พร้อมวงพรีวิวรัศมีระเบิด
         drawAimingReticle(g2);
 
-        // 10. วาด Popup สมุดสูตรยาเต็มจอเมื่อกดเปิด
+        // 11. วาด Popup สมุดสูตรยาเต็มจอเมื่อกดเปิด
         if (engine.isRecipeBookOpen()) {
             RecipeBookDialog.render(g2, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
         }
 
-        // 11. วาดเอฟเฟกต์อันตรายเรืองแสงรอบขอบจอเมื่อเลือดหอคอยต่ำกว่า 35%
+        // 12. วาดเอฟเฟกต์อันตรายเรืองแสงรอบขอบจอเมื่อเลือดหอคอยต่ำกว่า 35%
         double hpRatio = (double) engine.getTower().getHp() / engine.getTower().getMaxHp();
         if (hpRatio < 0.35 && !engine.getTower().isDead()) {
             drawLowHpDangerVignette(g2, hpRatio);
         }
 
-        // --- สิ้นสุดการเรนเดอร์ คืนค่า Transform ---
+        // 13. วาดป๊อปอัพสอนเล่นก่อนเริ่มด่าน (StageIntroOverlay)
+        if (introOverlay != null && introOverlay.isActive()) {
+            introOverlay.render(g2, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+        }
+
+        // คืนค่า Transform
         g2.setTransform(origTx);
         g2.setClip(origClip);
     }
@@ -242,56 +336,42 @@ public class GameplayPanel extends JPanel {
         int w = Constants.WINDOW_WIDTH;
         int h = Constants.WINDOW_HEIGHT;
 
-        // โซนบน: ท้องฟ้ากลางคืนและเลนมอนสเตอร์
+        BufferedImage bg = AssetLoader.getImage("bg_gameplay");
+        if (bg != null) {
+            g.drawImage(bg, 0, 0, w, h, null);
+            // เส้นคั่นเรืองแสงสีทองบางๆ เพื่อช่วยนำสายตา
+            g.setColor(new Color(255, 215, 0, 45));
+            g.drawLine(0, Constants.ZONE_MID_Y, w, Constants.ZONE_MID_Y);
+            g.drawLine(0, Constants.ZONE_BOT_Y, w, Constants.ZONE_BOT_Y);
+            return;
+        }
+
+        // กรณี Fallback หากไม่มีภาพพื้นหลัง
         GradientPaint skyGradient = new GradientPaint(0, 0, new Color(15, 12, 35), 0, Constants.ZONE_MID_Y, new Color(30, 20, 50));
         g.setPaint(skyGradient);
         g.fillRect(0, 0, w, Constants.ZONE_MID_Y);
 
-        // ทางเดินดิน/หินเวทมนตร์ของมอนสเตอร์
         g.setColor(new Color(45, 38, 55));
-        g.fillRect(0, Constants.MONSTER_LANE_Y - 10, w, 90);
-        g.setColor(new Color(65, 55, 80));
-        g.setStroke(new BasicStroke(2));
-        g.drawLine(0, Constants.MONSTER_LANE_Y - 10, w, Constants.MONSTER_LANE_Y - 10);
-        g.drawLine(0, Constants.MONSTER_LANE_Y + 80, w, Constants.MONSTER_LANE_Y + 80);
+        g.fillRect(0, Constants.MONSTER_LANE_Y - 14, w, 94);
 
-        // ดวงจันทร์เสี้ยว
-        g.setColor(new Color(255, 245, 200, 220));
-        g.fillOval(w - 180, 25, 60, 60);
-        g.setColor(new Color(15, 12, 35));
-        g.fillOval(w - 195, 20, 55, 55);
-
-        // โซนกลาง: แท่นวางสายพานลำเลียง
         GradientPaint midGrad = new GradientPaint(0, Constants.ZONE_MID_Y, new Color(25, 20, 30), 0, Constants.ZONE_BOT_Y, new Color(18, 15, 25));
         g.setPaint(midGrad);
         g.fillRect(0, Constants.ZONE_MID_Y, w, Constants.ZONE_MID_HEIGHT);
 
-        // เส้นแบ่งโซนเรืองแสงสีทอง
-        g.setColor(new Color(Constants.COLOR_ACCENT_GOLD.getRed(), Constants.COLOR_ACCENT_GOLD.getGreen(), Constants.COLOR_ACCENT_GOLD.getBlue(), 80));
-        g.drawLine(0, Constants.ZONE_MID_Y, w, Constants.ZONE_MID_Y);
-        g.drawLine(0, Constants.ZONE_BOT_Y, w, Constants.ZONE_BOT_Y);
-
-        // โซนล่าง: โต๊ะห้องแล็บปรุงยาของนักปรุงยา (Alchemist Workbench)
         GradientPaint botGrad = new GradientPaint(0, Constants.ZONE_BOT_Y, new Color(50, 35, 28), 0, h, new Color(28, 18, 14));
         g.setPaint(botGrad);
         g.fillRect(0, Constants.ZONE_BOT_Y, w, Constants.ZONE_BOT_HEIGHT);
-
-        // ลายไม้บนโต๊ะ
-        g.setColor(new Color(75, 52, 42));
-        for (int y = Constants.ZONE_BOT_Y + 30; y < h; y += 45) {
-            g.drawLine(0, y, w, y);
-        }
     }
 
     private void drawTopHUD(Graphics2D g) {
         int w = Constants.WINDOW_WIDTH;
 
         // แถบข้อมูลด้านบนสุด (HUD Banner)
-        g.setColor(new Color(10, 8, 20, 210));
-        g.fillRoundRect(w / 2 - 290, 10, 580, 42, 14, 14);
+        g.setColor(new Color(10, 8, 20, 220));
+        g.fillRoundRect(w / 2 - 310, 10, 620, 42, 14, 14);
         g.setColor(Constants.COLOR_ACCENT_GOLD);
-        g.setStroke(new BasicStroke(2));
-        g.drawRoundRect(w / 2 - 290, 10, 580, 42, 14, 14);
+        g.setStroke(new BasicStroke(2.0f));
+        g.drawRoundRect(w / 2 - 310, 10, 620, 42, 14, 14);
 
         g.setFont(Constants.FONT_BOLD);
         g.setColor(Color.WHITE);
@@ -304,108 +384,377 @@ public class GameplayPanel extends JPanel {
         int remaining = engine.getActiveMonsters().size() + engine.getWaveManager().getRemainingInQueue();
         String monstersText = "มอนสเตอร์: " + remaining;
 
-        g.drawString(waveText, w / 2 - 275, 36);
+        g.drawString(waveText, w / 2 - 295, 36);
         g.setColor(Constants.COLOR_ACCENT_GOLD);
-        g.drawString(scoreText, w / 2 - 75, 36);
-        g.setColor(new Color(255, 110, 110));
-        g.drawString(monstersText, w / 2 + 95, 36);
+        g.drawString(scoreText, w / 2 - 80, 36);
+        g.setColor(new Color(255, 120, 120));
+        g.drawString(monstersText, w / 2 + 105, 36);
 
         // วาด Combo Streak ถ้ามี
         int combo = engine.getComboCount();
         if (combo >= 2) {
-            int comboX = w - 210;
+            int comboX = w - 245;
             int comboY = 12;
-            g.setColor(new Color(255, 140, 0, 220));
-            g.fillRoundRect(comboX, comboY, 190, 38, 10, 10);
+            g.setColor(new Color(255, 140, 0, 230));
+            g.fillRoundRect(comboX, comboY, 125, 38, 10, 10);
             g.setColor(Constants.COLOR_ACCENT_GOLD);
-            g.setStroke(new BasicStroke(2));
-            g.drawRoundRect(comboX, comboY, 190, 38, 10, 10);
+            g.setStroke(new BasicStroke(2.0f));
+            g.drawRoundRect(comboX, comboY, 125, 38, 10, 10);
 
             g.setColor(Color.WHITE);
-            g.setFont(com.potionpanic.util.FontHelper.bold(14));
-            g.drawString("COMBO x" + combo + "!", comboX + 22, comboY + 24);
+            g.setFont(FontHelper.bold(14));
+            g.drawString("COMBO x" + combo + "!", comboX + 16, comboY + 24);
+        }
+
+        // ปุ่ม Mute เสียง [M] (ไอคอนลำโพงเวกเตอร์กะทัดรัด)
+        drawSoundButton(g);
+    }
+
+    private void drawSoundButton(Graphics2D g) {
+        boolean soundOn = SoundManager.getInstance().isSoundEnabled();
+        boolean hover = soundBtnRect.contains(mouseX, mouseY);
+
+        g.setColor(hover ? new Color(55, 42, 75, 230) : new Color(25, 18, 35, 220));
+        g.fillRoundRect(soundBtnRect.x, soundBtnRect.y, soundBtnRect.width, soundBtnRect.height, 10, 10);
+        g.setColor(hover ? Constants.COLOR_ACCENT_GOLD : new Color(110, 95, 140));
+        g.setStroke(new BasicStroke(hover ? 2.0f : 1.4f));
+        g.drawRoundRect(soundBtnRect.x, soundBtnRect.y, soundBtnRect.width, soundBtnRect.height, 10, 10);
+
+        int cx = soundBtnRect.x + soundBtnRect.width / 2;
+        int cy = soundBtnRect.y + soundBtnRect.height / 2;
+        Color iconColor = soundOn ? (hover ? Color.WHITE : new Color(255, 225, 120)) : new Color(170, 150, 180);
+        g.setColor(iconColor);
+
+        // ตัวลำโพงเวกเตอร์
+        int spkLeft = cx - 9;
+        int spkTop = cy - 4;
+        g.fillRect(spkLeft, spkTop, 5, 8);
+
+        Polygon cone = new Polygon();
+        cone.addPoint(spkLeft + 5, spkTop);
+        cone.addPoint(spkLeft + 10, cy - 7);
+        cone.addPoint(spkLeft + 10, cy + 7);
+        cone.addPoint(spkLeft + 5, cy + 4);
+        g.fillPolygon(cone);
+
+        if (soundOn) {
+            g.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g.drawArc(cx - 3, cy - 6, 12, 12, -45, 90);
+            g.drawArc(cx - 1, cy - 9, 17, 18, -45, 90);
+        } else {
+            g.setColor(new Color(255, 90, 90));
+            g.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g.drawLine(cx - 8, cy - 8, cx + 8, cy + 8);
         }
     }
 
     /**
-     * วาดคัมภีร์สูตรยาด่วนถาวรบนโต๊ะ (Quick Recipe Board)
-     * แสดงเฉพาะสูตรยาที่สามารถผสมได้ในด่านปัจจุบัน ดีไซน์คลีนสบายตา
+     * วาดตำราปรุงยาบนโต๊ะ (Grimoire on Tabletop)
+     * สามารถคลิกสลับเปิด/ปิดได้ตามต้องการ
      */
     private void drawQuickRecipeBoard(Graphics2D g) {
-        int bx = recipeBoardRect.x;
-        int by = recipeBoardRect.y;
-        int bw = recipeBoardRect.width;
-        int bh = recipeBoardRect.height;
-
-        // แผ่นคัมภีร์ไม้โบราณ
-        g.setColor(new Color(42, 28, 22));
-        g.fillRoundRect(bx, by, bw, bh, 14, 14);
-        g.setColor(Constants.COLOR_WOOD_LIGHT);
-        g.setStroke(new BasicStroke(2.5f));
-        g.drawRoundRect(bx, by, bw, bh, 14, 14);
-
-        // พื้นกระดาษด้านใน
-        g.setColor(new Color(245, 235, 215, 240));
-        g.fillRoundRect(bx + 8, by + 8, bw - 16, bh - 16, 10, 10);
-
-        // หัวข้อคัมภีร์
-        g.setColor(new Color(80, 45, 20));
-        g.setFont(com.potionpanic.util.FontHelper.bold(13));
-        g.drawString("คัมภีร์สูตรยาเฉพาะด่าน (คลิกดูละเอียด)", bx + 16, by + 28);
-
-        // เส้นคั่น
-        g.setColor(new Color(190, 165, 135));
-        g.drawLine(bx + 16, by + 34, bx + bw - 16, by + 34);
-
-        // แสดงเฉพาะสูตรยาที่ทำได้ในด่านนี้ (Clean Thai Labels)
-        java.util.List<String[]> activeRecipes = new java.util.ArrayList<>();
-        activeRecipes.add(new String[]{"[ยาเพลิง]", "สมุนไพร x2", "ชนะทาง อสูรพฤกษา (ดาเมจหมู่ + ไฟไหม้)"});
-        activeRecipes.add(new String[]{"[ยาน้ำแข็ง]", "ผลึกน้ำแข็ง x2", "ชนะทาง โกเลมไฟ (หน่วงช้าลง 50%)"});
-
-        java.util.List<IngredientType> allowed = engine.getCurrentStageConfig().getAllowedIngredients();
-        if (allowed.contains(IngredientType.TOXIC_MUSHROOM)) {
-            activeRecipes.add(new String[]{"[ยากรดพิษ]", "เห็ดพิษ x2", "ชนะทาง สัตว์ร้ายเกราะ (ละลายเกราะหนา)"});
+        if (!tableBookOpen) {
+            drawClosedGrimoire(g);
+        } else {
+            drawOpenGrimoire(g);
         }
-        if (allowed.contains(IngredientType.THUNDER_ROOT)) {
-            activeRecipes.add(new String[]{"[ยาสายฟ้า]", "รากสายฟ้า x2", "ชนะทาง อิมป์ว่องไว (ชะงัก Stun)"});
-            activeRecipes.add(new String[]{"[ยาระเบิด]", "สมุนไพร + รากสายฟ้า", "ระเบิดกวาดล้างรัศมีกว้าง"});
-        }
-
-        int rowY = by + 52;
-        for (String[] r : activeRecipes) {
-            Color potionColor = switch (r[0]) {
-                case "[ยาเพลิง]" -> new Color(210, 50, 35);
-                case "[ยาน้ำแข็ง]" -> new Color(25, 118, 210);
-                case "[ยากรดพิษ]" -> new Color(56, 142, 60);
-                case "[ยาสายฟ้า]" -> new Color(200, 140, 0);
-                default -> new Color(190, 70, 20);
-            };
-
-            g.setFont(com.potionpanic.util.FontHelper.bold(11));
-            g.setColor(potionColor);
-            g.drawString(r[0] + ":", bx + 18, rowY);
-
-            g.setFont(com.potionpanic.util.FontHelper.plain(11));
-            g.setColor(new Color(110, 60, 25));
-            g.drawString(r[1], bx + 95, rowY);
-
-            g.setColor(new Color(30, 95, 40));
-            g.drawString("➔ " + r[2], bx + 215, rowY);
-
-            rowY += 27;
-        }
-
-        // แถบคำแนะนำคีย์ลัดด้านล่าง
-        g.setColor(new Color(230, 215, 185));
-        g.fillRect(bx + 8, by + bh - 32, bw - 16, 24);
-        g.setColor(new Color(120, 50, 15));
-        g.setFont(com.potionpanic.util.FontHelper.bold(11));
-        g.drawString("[1-5] หยิบของ | [Space] ผสมยา | [Backspace] ลบของ | [Q-R] เลือกยา | [F11] เต็มจอ", bx + 16, by + bh - 16);
     }
 
     /**
-     * วาดเอฟเฟกต์สีแดงเตือนภัยอันตรายรอบขอบจอเมื่อเลือดหอคอย < 35%
+     * วาดหน้าปกหนังสือตำราสูตรยาสุดคลาสสิก (Closed Leather Grimoire)
      */
+    private void drawClosedGrimoire(Graphics2D g) {
+        int bx = closedBookRect.x;
+        int by = closedBookRect.y;
+        int bw = closedBookRect.width;
+        int bh = closedBookRect.height;
+        boolean hover = closedBookRect.contains(mouseX, mouseY);
+
+        // เงาตกกระทบของสมุดบนโต๊ะไม้
+        g.setColor(new Color(0, 0, 0, hover ? 180 : 130));
+        g.fillRoundRect(bx + 4, by + 6, bw, bh, 18, 18);
+
+        // ปกหนังสมุดสีน้ำตาลเข้มหรูหรา (Fantasy Leather Cover)
+        GradientPaint leather = new GradientPaint(bx, by, new Color(56, 32, 22), bx + bw, by + bh, new Color(28, 16, 12));
+        g.setPaint(leather);
+        g.fillRoundRect(bx, by, bw, bh, 16, 16);
+
+        // ขอบทองประดับรอบเล่ม
+        g.setColor(hover ? Constants.COLOR_ACCENT_GOLD : new Color(185, 140, 65));
+        g.setStroke(new BasicStroke(hover ? 2.5f : 1.8f));
+        g.drawRoundRect(bx, by, bw, bh, 16, 16);
+
+        // ลายเส้นประดับขอบใน
+        g.setColor(new Color(130, 95, 45, 150));
+        g.setStroke(new BasicStroke(1.0f));
+        g.drawRoundRect(bx + 6, by + 6, bw - 12, bh - 12, 12, 12);
+
+        // สันสมุดหนังด้านซ้ายพร้อมแถบเย็บทอง
+        int spineW = 20;
+        GradientPaint spineGrad = new GradientPaint(bx, by, new Color(38, 20, 14), bx + spineW, by, new Color(60, 36, 26));
+        g.setPaint(spineGrad);
+        g.fillRoundRect(bx, by, spineW, bh, 16, 16);
+        g.fillRect(bx + 8, by, spineW - 8, bh);
+        g.setColor(new Color(195, 155, 75));
+        g.setStroke(new BasicStroke(1.5f));
+        g.drawLine(bx + spineW, by + 4, bx + spineW, by + bh - 4);
+        for (int i = 1; i <= 3; i++) {
+            int ry = by + (bh * i / 4);
+            g.setColor(Constants.COLOR_ACCENT_GOLD);
+            g.drawLine(bx + 2, ry, bx + spineW - 2, ry);
+        }
+
+        // ริบบิ้นคั่นหน้าสมุดสีแดงห้อยลงมาด้านล่าง (Crimson Ribbon)
+        int ribX = bx + bw / 2 - 8;
+        int ribY = by + bh - 4;
+        g.setColor(new Color(185, 30, 30));
+        Polygon ribbon = new Polygon();
+        ribbon.addPoint(ribX, ribY);
+        ribbon.addPoint(ribX + 16, ribY);
+        ribbon.addPoint(ribX + 16, ribY + 18);
+        ribbon.addPoint(ribX + 8, ribY + 12);
+        ribbon.addPoint(ribX, ribY + 18);
+        g.fillPolygon(ribbon);
+
+        // มุมทองเหลือง 4 มุม (Brass Corner Protectors)
+        drawCornerOrnament(g, bx + 4, by + 4, 1, 1);
+        drawCornerOrnament(g, bx + bw - 4, by + 4, -1, 1);
+        drawCornerOrnament(g, bx + 4, by + bh - 4, 1, -1);
+        drawCornerOrnament(g, bx + bw - 4, by + bh - 4, -1, -1);
+
+        // ตราสัญลักษณ์เวทมนตร์สีทองกึ่งกลางหน้าปก
+        int cx = bx + spineW + (bw - spineW) / 2;
+        int cy = by + 90;
+        int sealR = 34;
+
+        g.setColor(new Color(25, 14, 10));
+        g.fillOval(cx - sealR, cy - sealR, sealR * 2, sealR * 2);
+        g.setColor(hover ? Constants.COLOR_ACCENT_GOLD : new Color(205, 160, 70));
+        g.setStroke(new BasicStroke(hover ? 2.2f : 1.6f));
+        g.drawOval(cx - sealR, cy - sealR, sealR * 2, sealR * 2);
+        g.drawOval(cx - sealR + 4, cy - sealR + 4, (sealR - 4) * 2, (sealR - 4) * 2);
+
+        // วาดไอคอนขวดยาเรืองแสงกลางตรา
+        BufferedImage flaskImg = AssetLoader.getImage("potion_explosive");
+        if (flaskImg != null) {
+            g.drawImage(flaskImg, cx - 18, cy - 18, 36, 36, null);
+        }
+
+        // ชื่อหน้าปก "ตำราสูตรยา"
+        g.setFont(FontHelper.bold(17));
+        FontMetrics fm = g.getFontMetrics();
+        String title = "ตำราสูตรยา";
+        int tx = cx - fm.stringWidth(title) / 2;
+        int ty = cy + 54;
+        g.setColor(new Color(0, 0, 0, 200));
+        g.drawString(title, tx + 1, ty + 1);
+        g.setColor(hover ? Color.WHITE : Constants.COLOR_ACCENT_GOLD);
+        g.drawString(title, tx, ty);
+
+        // คำแนะนำคลิกเปิด
+        g.setFont(FontHelper.bold(11));
+        FontMetrics subFm = g.getFontMetrics();
+        String sub = hover ? "คลิกเพื่อเปิดอ่าน!" : "(คลิกเพื่อเปิด)";
+        int sx = cx - subFm.stringWidth(sub) / 2;
+        g.setColor(hover ? new Color(255, 235, 160) : new Color(185, 160, 130));
+        g.drawString(sub, sx, ty + 24);
+    }
+
+    private void drawCornerOrnament(Graphics2D g, int x, int y, int dirX, int dirY) {
+        g.setColor(Constants.COLOR_ACCENT_GOLD);
+        Polygon p = new Polygon();
+        p.addPoint(x, y);
+        p.addPoint(x + dirX * 16, y);
+        p.addPoint(x, y + dirY * 16);
+        g.fillPolygon(p);
+    }
+
+    /**
+     * วาดตำราที่กางเปิดออกเสมือนหนังสือจริง 2 หน้า (Open Two-Page Grimoire)
+     * แสดงเฉพาะสมการรูปภาพกระชับ ไม่มีตัวหนังสือยิบย่อยรกตา
+     */
+    private void drawOpenGrimoire(Graphics2D g) {
+        int bx = openBookRect.x;
+        int by = openBookRect.y;
+        int bw = openBookRect.width;
+        int bh = openBookRect.height;
+
+        // เงาตกกระทบของสมุดเปิด
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRoundRect(bx + 4, by + 6, bw, bh, 18, 18);
+
+        // แผ่นรองปกหนังด้านล่าง
+        g.setColor(new Color(45, 26, 18));
+        g.fillRoundRect(bx, by, bw, bh, 16, 16);
+        g.setColor(new Color(160, 120, 60));
+        g.setStroke(new BasicStroke(1.5f));
+        g.drawRoundRect(bx, by, bw, bh, 16, 16);
+
+        // สองหน้ากระดาษพับกางคู่ (Left & Right Parchment Pages)
+        int pageW = (bw - 20) / 2;
+        int pageH = bh - 12;
+        int leftX = bx + 6;
+        int rightX = bx + 14 + pageW;
+        int pageY = by + 6;
+
+        drawMiniParchment(g, leftX, pageY, pageW, pageH);
+        drawMiniParchment(g, rightX, pageY, pageW, pageH);
+
+        // สันหนังสือตรงกลาง
+        GradientPaint spineGrad = new GradientPaint(leftX + pageW, pageY, new Color(110, 75, 45, 180), rightX, pageY, new Color(75, 45, 25, 180));
+        g.setPaint(spineGrad);
+        g.fillRect(leftX + pageW - 4, pageY, 16, pageH);
+
+        // หัวข้อหน้ากระดาษ
+        g.setFont(FontHelper.bold(12));
+        g.setColor(new Color(75, 38, 16));
+        g.drawString("ตำราปรุงยาประจำด่าน", leftX + 14, pageY + 20);
+
+        // ปุ่มปิด [X] ที่มุมขวาบน
+        boolean closeHover = bookCloseBtnRect.contains(mouseX, mouseY);
+        g.setColor(closeHover ? new Color(220, 50, 50) : new Color(160, 45, 45));
+        g.fillRoundRect(bookCloseBtnRect.x, bookCloseBtnRect.y, bookCloseBtnRect.width, bookCloseBtnRect.height, 6, 6);
+        g.setColor(Color.WHITE);
+        g.setFont(FontHelper.bold(13));
+        g.drawString("X", bookCloseBtnRect.x + 6, bookCloseBtnRect.y + 16);
+
+        // รวบรวมสูตรยาประจำด่านปัจจุบัน
+        record VisualEq(IngredientType i1, IngredientType i2, IngredientType i3, String potSprite, String monSprite, boolean isRare) {}
+        List<VisualEq> eqList = new ArrayList<>();
+        eqList.add(new VisualEq(IngredientType.RED_HERB, IngredientType.RED_HERB, IngredientType.BLUE_CRYSTAL, "potion_fire", "monster_plant_creeper", false));
+        eqList.add(new VisualEq(IngredientType.BLUE_CRYSTAL, IngredientType.BLUE_CRYSTAL, IngredientType.RED_HERB, "potion_ice", "monster_fire_golem", false));
+
+        List<IngredientType> allowed = engine.getCurrentStageConfig().getAllowedIngredients();
+        if (allowed.contains(IngredientType.TOXIC_MUSHROOM)) {
+            eqList.add(new VisualEq(IngredientType.TOXIC_MUSHROOM, IngredientType.TOXIC_MUSHROOM, IngredientType.RED_HERB, "potion_poison", "monster_armored_beast", false));
+            eqList.add(new VisualEq(IngredientType.TOXIC_MUSHROOM, IngredientType.BLUE_CRYSTAL, IngredientType.RED_HERB, "potion_frost_venom", "monster_armored_beast", false));
+        }
+        if (allowed.contains(IngredientType.THUNDER_ROOT)) {
+            eqList.add(new VisualEq(IngredientType.THUNDER_ROOT, IngredientType.THUNDER_ROOT, IngredientType.BLUE_CRYSTAL, "potion_lightning", "monster_swift_imp", false));
+            eqList.add(new VisualEq(null, null, null, "potion_explosive", "monster_chaos_boss", true));
+        }
+
+        // วาดสูตรสมการภาพ: หน้าซ้าย (สูตรที่ 1-3), หน้าขวา (สูตรที่ 4-6)
+        int rowH = 64;
+        int iconS = 24;
+        int potSize = 28;
+
+        for (int i = 0; i < eqList.size(); i++) {
+            VisualEq eq = eqList.get(i);
+            boolean onLeft = (i < 3);
+            int pageStartX = onLeft ? leftX : rightX;
+            int rowIndex = onLeft ? i : (i - 3);
+            int ry = pageY + 30 + rowIndex * rowH;
+            int rx = pageStartX + 8;
+            int rw = pageW - 16;
+
+            // พื้นหลังแถวสมการ
+            g.setColor(new Color(230, 215, 190, 110));
+            g.fillRoundRect(rx, ry, rw, rowH - 6, 8, 8);
+
+            int cx = rx + 8;
+            int cy = ry + (rowH - 6 - iconS) / 2;
+
+            if (eq.isRare) {
+                // ป้ายของแรร์สุ่ม
+                g.setColor(new Color(215, 200, 175));
+                g.fillRoundRect(cx, cy, 64, iconS, 5, 5);
+                g.setColor(new Color(140, 60, 20));
+                g.setStroke(new BasicStroke(1.0f));
+                g.drawRoundRect(cx, cy, 64, iconS, 5, 5);
+                g.setFont(FontHelper.bold(10));
+                g.setColor(new Color(70, 25, 10));
+                g.drawString("สุ่ม RARE", cx + 7, cy + 16);
+                cx += 68;
+
+                drawMathSign(g, cx, cy + iconS / 2, "->");
+                cx += 14;
+
+                // ขวดยาระเบิด
+                BufferedImage potImg = AssetLoader.getImage(eq.potSprite);
+                drawImageBox(g, cx, cy - 2, potSize, potImg, new Color(225, 110, 255));
+                cx += potSize + 6;
+
+                drawMathSign(g, cx, cy + iconS / 2, "->");
+                cx += 14;
+
+                // บอส
+                BufferedImage monImg = AssetLoader.getImage(eq.monSprite);
+                drawImageBox(g, cx, cy - 2, potSize, monImg, new Color(255, 180, 50));
+            } else {
+                // [Ing1] + [Ing2] + [Ing3] = [Potion] -> [Monster]
+                drawImageBox(g, cx, cy, iconS, eq.i1.getImage(), new Color(175, 145, 110));
+                cx += iconS + 2;
+
+                drawMathSign(g, cx, cy + iconS / 2, "+");
+                cx += 8;
+
+                drawImageBox(g, cx, cy, iconS, eq.i2.getImage(), new Color(175, 145, 110));
+                cx += iconS + 2;
+
+                drawMathSign(g, cx, cy + iconS / 2, "+");
+                cx += 8;
+
+                drawImageBox(g, cx, cy, iconS, eq.i3.getImage(), new Color(175, 145, 110));
+                cx += iconS + 2;
+
+                drawMathSign(g, cx, cy + iconS / 2, "=");
+                cx += 10;
+
+                // ขวดยาผลลัพธ์
+                BufferedImage potImg = AssetLoader.getImage(eq.potSprite);
+                drawImageBox(g, cx, cy - 2, potSize, potImg, Constants.COLOR_ACCENT_GOLD);
+                cx += potSize + 4;
+
+                drawMathSign(g, cx, cy + iconS / 2, "->");
+                cx += 12;
+
+                // มอนสเตอร์เป้าหมาย
+                BufferedImage monImg = AssetLoader.getImage(eq.monSprite);
+                drawImageBox(g, cx, cy - 2, potSize, monImg, new Color(220, 100, 100));
+            }
+        }
+    }
+
+    private void drawMiniParchment(Graphics2D g, int x, int y, int w, int h) {
+        GradientPaint grad = new GradientPaint(x, y, new Color(248, 240, 224), x + w, y + h, new Color(236, 222, 198));
+        g.setPaint(grad);
+        g.fillRoundRect(x, y, w, h, 12, 12);
+        g.setColor(new Color(175, 145, 110));
+        g.setStroke(new BasicStroke(1.2f));
+        g.drawRoundRect(x, y, w, h, 12, 12);
+        g.setColor(new Color(210, 185, 155, 90));
+        g.drawRoundRect(x + 5, y + 5, w - 10, h - 10, 8, 8);
+    }
+
+    private void drawImageBox(Graphics2D g, int x, int y, int size, BufferedImage img, Color borderColor) {
+        g.setColor(new Color(245, 235, 215));
+        g.fillRoundRect(x, y, size, size, 5, 5);
+        g.setColor(borderColor);
+        g.setStroke(new BasicStroke(1.2f));
+        g.drawRoundRect(x, y, size, size, 5, 5);
+        if (img != null) {
+            g.drawImage(img, x + 2, y + 2, size - 4, size - 4, null);
+        }
+    }
+
+    private void drawMathSign(Graphics2D g, int cx, int cy, String sign) {
+        g.setFont(FontHelper.bold(12));
+        g.setColor(new Color(110, 65, 30));
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(sign, cx - fm.stringWidth(sign) / 2, cy + 4);
+    }
+
+    private void drawImageMini(Graphics2D g, int x, int y, int size, BufferedImage img) {
+        g.setColor(new Color(245, 235, 215));
+        g.fillRoundRect(x, y, size, size, 4, 4);
+        g.setColor(new Color(180, 155, 120));
+        g.drawRoundRect(x, y, size, size, 4, 4);
+        if (img != null) {
+            g.drawImage(img, x + 1, y + 1, size - 2, size - 2, null);
+        }
+    }
+
     private void drawLowHpDangerVignette(Graphics2D g, double hpRatio) {
         long time = System.currentTimeMillis();
         double pulse = (Math.sin(time / 200.0) + 1.0) / 2.0;
@@ -429,17 +778,28 @@ public class GameplayPanel extends JPanel {
         Potion selected = engine.getPotionRack().getSelectedPotion();
         if (selected != null && mouseY < Constants.ZONE_MID_Y && mouseY >= 0) {
             Color c = selected.getFlaskColor();
-            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 180));
-            g.setStroke(new BasicStroke(2.5f));
+            int blastRadius = (int) selected.getRadius();
 
-            int r = 24;
+            // 1. วาดวงพรีวิวรัศมีระเบิดจริง (Real Splash Blast Area)
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 35));
+            g.fillOval(mouseX - blastRadius, mouseY - blastRadius / 2, blastRadius * 2, blastRadius);
+
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 90));
+            g.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10, new float[]{6, 6}, 0));
+            g.drawOval(mouseX - blastRadius, mouseY - blastRadius / 2, blastRadius * 2, blastRadius);
+
+            // 2. วาดเป้าเล็งตรงกลาง
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 220));
+            g.setStroke(new BasicStroke(2.2f));
+            int r = 18;
             g.drawOval(mouseX - r, mouseY - r, r * 2, r * 2);
             g.drawLine(mouseX - r - 8, mouseY, mouseX + r + 8, mouseY);
             g.drawLine(mouseX, mouseY - r - 8, mouseX, mouseY + r + 8);
 
+            // 3. ป้ายชื่อยา
             g.setColor(Color.WHITE);
             g.setFont(Constants.FONT_SMALL);
-            g.drawString("คลิกเพื่อปา " + selected.getName(), mouseX + 16, mouseY - 14);
+            g.drawString("คลิกเพื่อปา " + selected.getName().split(" ")[0], mouseX + 16, mouseY - 14);
         }
     }
 }

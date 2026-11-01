@@ -27,8 +27,9 @@ public class StageSelectPanel extends JPanel {
     // ปุ่มเลือกด่าน (Stage Cards)
     private final Rectangle[] stageCards = new Rectangle[4];
 
-    // ปุ่มอัปเกรดสกิล 4 สาย
+    // ปุ่มอัปเกรดสกิล 4 สาย และปุ่มรีเซ็ตสกิล
     private final Rectangle[] upgradeBtns = new Rectangle[4];
+    private final Rectangle resetBtn = new Rectangle(910, 97, 100, 34);
 
     // ปุ่มเริ่มเล่น และปุ่มกลับเมนูหลัก
     private final Rectangle playStageBtn = new Rectangle(100, 615, 520, 52);
@@ -62,6 +63,7 @@ public class StageSelectPanel extends JPanel {
         for (int i = 0; i < 4; i++) {
             upgradeBtns[i] = new Rectangle(upgX, upgStartY + i * upgGapY, 140, 40);
         }
+        resetBtn.setBounds(665 + 535 - 160 - 20 - 105, 75 + 22, 95, 34);
     }
 
     private void initMouseListener() {
@@ -103,6 +105,18 @@ public class StageSelectPanel extends JPanel {
                     } else {
                         SoundManager.getInstance().playHit();
                     }
+                    return;
+                }
+
+                // 3.5 ปุ่มรีเซ็ตสกิล (คืนดาว 100%)
+                if (resetBtn.contains(mx, my)) {
+                    int refunded = profile.resetUpgrades();
+                    if (refunded > 0) {
+                        SoundManager.getInstance().playBoil();
+                    } else {
+                        SoundManager.getInstance().playHit();
+                    }
+                    repaint();
                     return;
                 }
 
@@ -373,10 +387,22 @@ public class StageSelectPanel extends JPanel {
         g.setColor(Color.WHITE);
         g.drawString("ดาวคงเหลือ: " + profile.getStarPoints() + " ดวง", starBoxX + 34, starBoxY + 22);
 
+        // ปุ่มรีเซ็ตสกิล (คืนดาว 100%)
+        g.setColor(new Color(60, 32, 45, 230));
+        g.fillRoundRect(resetBtn.x, resetBtn.y, resetBtn.width, resetBtn.height, 10, 10);
+        g.setColor(new Color(255, 120, 120));
+        g.setStroke(new BasicStroke(1.2f));
+        g.drawRoundRect(resetBtn.x, resetBtn.y, resetBtn.width, resetBtn.height, 10, 10);
+        g.setFont(FontHelper.bold(12));
+        g.setColor(Color.WHITE);
+        FontMetrics rfm = g.getFontMetrics();
+        String resetText = "รีเซ็ตสกิล";
+        g.drawString(resetText, resetBtn.x + (resetBtn.width - rfm.stringWidth(resetText)) / 2, resetBtn.y + 22);
+
         // คำอธิบายร้านค้า
-        g.setFont(FontHelper.plain(12));
+        g.setFont(FontHelper.plain(11));
         g.setColor(new Color(175, 165, 195));
-        g.drawString("นำดาวสะสมที่ได้จากการผ่านด่านมาอัปเกรดทักษะเวทมนตร์ถาวร", shopX + 24, shopY + 76);
+        g.drawString("นำดาวสะสมมาอัปเกรด (ชนะด่าน 1-3 ดาว | เล่นซ้ำ +1 ดาว | Endless +1 ดาว/2 เวฟ)", shopX + 24, shopY + 76);
 
         // รายการอัปเกรด 4 ชนิด
         ProfileManager.UpgradeType[] types = ProfileManager.UpgradeType.values();
@@ -431,28 +457,33 @@ public class StageSelectPanel extends JPanel {
             g.setColor(new Color(195, 185, 215));
             g.drawString(type.getDescription(), itemX + 16, itemY + 52);
 
-            // หลอดแสดงเลเวล 3 ช่อง (Lv. 0/3)
+            // หลอดแสดงเลเวลตามจำนวนขั้นสูงสุดของแต่ละสกิล (หอคอย 3 ขั้น / อื่นๆ 2 ขั้น)
             int level = profile.getUpgradeLevel(type);
+            int maxLv = profile.getMaxLevel(type);
             int barX = itemX + 16;
             int barY = itemY + 68;
-            for (int pip = 0; pip < ProfileManager.MAX_UPGRADE_LEVEL; pip++) {
-                int px = barX + pip * 36;
+            int pipW = (maxLv == 3) ? 30 : 38;
+            int pipGap = (maxLv == 3) ? 36 : 46;
+
+            for (int pip = 0; pip < maxLv; pip++) {
+                int px = barX + pip * pipGap;
                 if (pip < level) {
                     g.setColor(new Color(255, 204, 0));
-                    g.fillRoundRect(px, barY, 28, 12, 4, 4);
+                    g.fillRoundRect(px, barY, pipW, 14, 4, 4);
                 } else {
                     g.setColor(new Color(50, 42, 65));
-                    g.fillRoundRect(px, barY, 28, 12, 4, 4);
+                    g.fillRoundRect(px, barY, pipW, 14, 4, 4);
                 }
                 g.setColor(new Color(95, 80, 118));
-                g.drawRoundRect(px, barY, 28, 12, 4, 4);
+                g.drawRoundRect(px, barY, pipW, 14, 4, 4);
             }
 
             g.setFont(FontHelper.bold(12));
-            boolean isMax = (level >= ProfileManager.MAX_UPGRADE_LEVEL);
+            boolean isMax = (level >= maxLv);
             g.setColor(isMax ? Color.YELLOW : new Color(175, 165, 195));
-            String levelText = isMax ? "MAX" : ("Lv. " + level + "/3");
-            g.drawString(levelText, barX + 118, barY + 11);
+            String levelText = isMax ? "MAX" : ("Lv. " + level + "/" + maxLv);
+            int textX = barX + maxLv * pipGap + 8;
+            g.drawString(levelText, textX, barY + 12);
 
             // ปุ่มกดอัปเกรด
             Rectangle btn = upgradeBtns[i];

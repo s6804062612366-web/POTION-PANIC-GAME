@@ -1,5 +1,6 @@
 package com.potionpanic.entity.potion;
 
+import com.potionpanic.entity.VisualEffect;
 import com.potionpanic.entity.monster.Monster;
 import com.potionpanic.util.ElementType;
 import com.potionpanic.util.StatusEffect;
@@ -15,12 +16,23 @@ public class IcePotion extends Potion {
 
     public IcePotion() {
         super("ยาน้ำแข็ง (Ice Potion)", "ดาเมจน้ำแข็ง + สโลว์มอนสเตอร์ช้าลง 50%",
-                ElementType.ICE, 25, new Color(33, 150, 243), "potion_ice");
+                ElementType.ICE, 28, new Color(33, 150, 243), "potion_ice");
     }
 
     @Override
-    public void onImpact(double impactX, double impactY, List<Monster> allMonsters) {
-        double radius = 110.0 * globalRadiusMultiplier;
+    public double getRadius() {
+        return 115.0 * globalRadiusMultiplier;
+    }
+
+    @Override
+    public void onImpact(double impactX, double impactY, List<Monster> allMonsters, List<VisualEffect> effects) {
+        double radius = getRadius();
+        if (effects != null) {
+            effects.add(VisualEffect.createShockwave(impactX, impactY, radius, new Color(64, 196, 255)));
+            effects.add(VisualEffect.createIceSpikes(impactX, impactY, radius));
+            effects.add(VisualEffect.createElementalSplash(impactX, impactY, new Color(64, 196, 255)));
+        }
+
         for (Monster m : allMonsters) {
             if (m.isDead()) continue;
             double dx = (m.getX() + m.getWidth() / 2.0) - impactX;
@@ -29,7 +41,7 @@ public class IcePotion extends Potion {
 
             if (dist <= radius) {
                 m.takeDamage(baseDamage, element);
-                m.applyStatus(StatusEffect.FREEZE, 4.0); // สโลว์ 4 วินาที
+                m.applyStatus(StatusEffect.FREEZE, 4.0);
             }
         }
     }

@@ -10,6 +10,7 @@ public enum ElementType {
     ICE("น้ำแข็ง (Ice)", new Color(33, 150, 243), "[Ice]"),
     POISON("กรดพิษ (Poison)", new Color(76, 175, 80), "[Poison]"),
     LIGHTNING("สายฟ้า (Lightning)", new Color(255, 235, 59), "[Lightning]"),
+    UNIVERSAL("มหาเวททำลายล้าง (Universal)", new Color(255, 112, 67), "[Universal]"),
     NONE("ธรรมดา (Neutral)", new Color(158, 158, 158), "[Normal]");
 
     private final String displayName;

@@ -55,6 +55,7 @@ public class GameWindow extends JFrame {
         setLocationRelativeTo(null); // แสดงผลกึ่งกลางหน้าจอ
 
         initGlobalKeyShortcuts();
+        initWindowClosingHandler();
 
         // เริ่มเล่น BGM สังเคราะห์เบาๆ คลอในเกม
         SoundManager.getInstance().startBgm();
@@ -62,12 +63,37 @@ public class GameWindow extends JFrame {
         showScene("MENU");
     }
 
+    private void initWindowClosingHandler() {
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                cleanupAndExit();
+            }
+        });
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            SoundManager.getInstance().shutdown();
+        }, "PotionPanic-ShutdownHook"));
+    }
+
+    private void cleanupAndExit() {
+        mainMenuPanel.stopAnim();
+        gameplayPanel.stopLoop();
+        SoundManager.getInstance().shutdown();
+    }
+
     private void initGlobalKeyShortcuts() {
-        // ดักปุ่ม F11 เพื่อสลับโหมดเต็มจอ (Fullscreen Toggle)
+        // ดักปุ่มลัดระดับหน้าต่าง (F11 สลับเต็มจอ, M สลับเปิด/ปิดเสียง)
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
-            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_F11) {
-                toggleFullScreen();
-                return true;
+            if (e.getID() == KeyEvent.KEY_PRESSED) {
+                if (e.getKeyCode() == KeyEvent.VK_F11) {
+                    toggleFullScreen();
+                    return true;
+                } else if (e.getKeyCode() == KeyEvent.VK_M) {
+                    SoundManager.getInstance().toggleSound();
+                    repaint();
+                    return true;
+                }
             }
             return false;
         });
@@ -103,12 +129,20 @@ public class GameWindow extends JFrame {
 
     public void showScene(String sceneName) {
         cardLayout.show(rootPanel, sceneName);
+        if ("MENU".equals(sceneName)) {
+            mainMenuPanel.startAnim();
+            SoundManager.getInstance().playMenuBgm();
+        } else {
+            mainMenuPanel.stopAnim();
+        }
+
         if ("GAME".equals(sceneName)) {
             gameplayPanel.startLoop();
             gameplayPanel.requestFocusInWindow();
         } else {
             gameplayPanel.stopLoop();
             if ("STAGE_SELECT".equals(sceneName)) {
+                SoundManager.getInstance().playMenuBgm();
                 stageSelectPanel.repaint();
             }
         }
@@ -120,6 +154,7 @@ public class GameWindow extends JFrame {
 
     public void startStage(int stageNumber) {
         engine.startStage(stageNumber);
+        gameplayPanel.showStageIntro(engine.getCurrentStageConfig());
         showScene("GAME");
     }
 

@@ -52,6 +52,16 @@ public class PotionRack implements Renderable {
     }
 
     public Potion consumeSelected() {
+        if (selectedIndex < 0 || selectedIndex >= slots.length || slots[selectedIndex] == null) {
+            // หาขวดแรกที่ยังเหลืออยู่ในชั้นวาง หากไม่ได้เลือกไว้
+            for (int i = 0; i < slots.length; i++) {
+                if (slots[i] != null) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
         if (selectedIndex >= 0 && selectedIndex < slots.length && slots[selectedIndex] != null) {
             Potion p = slots[selectedIndex];
             slots[selectedIndex] = null;
@@ -86,6 +96,17 @@ public class PotionRack implements Renderable {
         selectedIndex = -1;
     }
 
+    public int getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    public Point getSlotCenter(int index) {
+        if (index < 0 || index >= slots.length) {
+            return new Point(x + slotSize / 2, y + 20 + slotSize / 2);
+        }
+        return new Point(x + index * (slotSize + gap) + slotSize / 2, y + 20 + slotSize / 2);
+    }
+
     public int getX() {
         return x;
     }
@@ -96,8 +117,9 @@ public class PotionRack implements Renderable {
 
     @Override
     public void render(Graphics2D g) {
-        int totalWidth = (slotSize + gap) * Constants.POTION_RACK_CAPACITY + 24;
-        int totalHeight = slotSize + 76;
+        int totalSlotsWidth = (Constants.POTION_RACK_CAPACITY - 1) * gap + Constants.POTION_RACK_CAPACITY * slotSize;
+        int totalWidth = totalSlotsWidth + 24;
+        int totalHeight = slotSize + 82;
 
         // วาดโต๊ะชั้นวางยา
         g.setColor(new Color(40, 28, 22));
@@ -106,10 +128,12 @@ public class PotionRack implements Renderable {
         g.setStroke(new BasicStroke(3));
         g.drawRoundRect(x - 12, y - 6, totalWidth, totalHeight, 16, 16);
 
-        // ป้ายหัวข้อชั้นวางยา
+        // ป้ายหัวข้อชั้นวางยา (จัดกึ่งกลางพอดี ไม่รกตา)
         g.setColor(Constants.COLOR_ACCENT_GOLD);
-        g.setFont(com.potionpanic.util.FontHelper.bold(12));
-        g.drawString("ชั้นพักขวดยาพร้อมใช้ (กด [Q/W/E/R] หรือคลิกเพื่อเลือก)", x, y + totalHeight - 12);
+        g.setFont(com.potionpanic.util.FontHelper.bold(11));
+        String rackTitle = "ชั้นวางขวดยาพร้อมใช้";
+        FontMetrics rfm = g.getFontMetrics();
+        g.drawString(rackTitle, x - 12 + (totalWidth - rfm.stringWidth(rackTitle)) / 2, y + totalHeight - 10);
 
         for (int i = 0; i < slots.length; i++) {
             int sx = x + i * (slotSize + gap);

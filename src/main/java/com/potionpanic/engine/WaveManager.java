@@ -10,7 +10,8 @@ import java.util.Random;
 
 /**
  * จัดการรอบการบุกของมอนสเตอร์ (Wave Manager)
- * ปรับตาม StageConfig: รองรับ Stage 1, Stage 2, Stage 3 และ Endless Mode
+ * ปรับตาม StageConfig: รองรับ Stage 1, Stage 2, Stage 3 (พร้อมบอสใหญ่) และ Endless Mode
+ * มีระบบกระจายพิกัดแกน Y ป้องกันมอนสเตอร์เดินซ้อนทับกัน
  */
 public class WaveManager {
     private StageConfig stageConfig;
@@ -44,120 +45,118 @@ public class WaveManager {
         this.waveInProgress = true;
         this.spawnTimer = 1.0;
 
-        double laneY = Constants.MONSTER_LANE_Y - 20;
+        double baseLaneY = Constants.MONSTER_LANE_Y - 20;
         double startX = Constants.WINDOW_WIDTH + 20;
 
         if (stageConfig.isEndless()) {
-            buildEndlessWave(waveNumber, startX, laneY);
+            buildEndlessWave(waveNumber, startX, baseLaneY);
         } else {
             switch (stageConfig.getStageNumber()) {
-                case 1 -> buildStage1Wave(waveNumber, startX, laneY);
-                case 2 -> buildStage2Wave(waveNumber, startX, laneY);
-                case 3 -> buildStage3Wave(waveNumber, startX, laneY);
-                default -> buildStage1Wave(waveNumber, startX, laneY);
+                case 1 -> buildStage1Wave(waveNumber, startX, baseLaneY);
+                case 2 -> buildStage2Wave(waveNumber, startX, baseLaneY);
+                case 3 -> buildStage3Wave(waveNumber, startX, baseLaneY);
+                default -> buildStage1Wave(waveNumber, startX, baseLaneY);
             }
         }
     }
 
+    private double staggerY(double baseLaneY) {
+        // สุ่มเหลื่อมพิกัด Y บน-ล่าง เล็กน้อย เพื่อไม่ให้มอนสเตอร์เดินซ้อนทับกัน
+        return baseLaneY + (rand.nextDouble() - 0.5) * 26.0;
+    }
+
     private void buildStage1Wave(int wave, double startX, double laneY) {
-        // ด่าน 1: มีแค่อสูรพฤกษา (แพ้ไฟ) และ โกเลมไฟ (แพ้น้ำแข็ง) เพื่อให้ผู้เล่นใหม่จับทางได้ง่าย
         if (wave == 1) {
             spawnInterval = 3.5;
-            spawnQueue.add(new PlantCreeper(startX, laneY));
-            spawnQueue.add(new FireGolem(startX, laneY));
-            spawnQueue.add(new PlantCreeper(startX, laneY));
-            spawnQueue.add(new FireGolem(startX, laneY));
+            spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+            spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+            spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+            spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
         } else {
             spawnInterval = 2.8;
-            spawnQueue.add(new PlantCreeper(startX, laneY));
-            spawnQueue.add(new FireGolem(startX, laneY));
-            spawnQueue.add(new PlantCreeper(startX, laneY));
-            spawnQueue.add(new PlantCreeper(startX, laneY));
-            spawnQueue.add(new FireGolem(startX, laneY));
-            spawnQueue.add(new PlantCreeper(startX, laneY));
-            spawnQueue.add(new FireGolem(startX, laneY));
+            spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+            spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+            spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+            spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+            spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+            spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+            spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
         }
     }
 
     private void buildStage2Wave(int wave, double startX, double laneY) {
-        // ด่าน 2: เพิ่มสัตว์ร้ายหุ้มเกราะ (แพ้กรดพิษ)
         switch (wave) {
             case 1 -> {
                 spawnInterval = 3.0;
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
             }
             case 2 -> {
                 spawnInterval = 2.6;
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
             }
             case 3 -> {
                 spawnInterval = 2.2;
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
             }
         }
     }
 
     private void buildStage3Wave(int wave, double startX, double laneY) {
-        // ด่าน 3: ครบทุกตัว + อิมป์ว่องไว + บอส
         switch (wave) {
             case 1 -> {
                 spawnInterval = 2.7;
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
             }
             case 2 -> {
                 spawnInterval = 2.2;
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
             }
             case 3 -> {
-                spawnInterval = 1.8;
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new PlantCreeper(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
-                spawnQueue.add(new SwiftImp(startX, laneY));
-                spawnQueue.add(new ArmoredBeast(startX, laneY));
-                spawnQueue.add(new FireGolem(startX, laneY));
+                // Wave สุดท้ายของด่าน 3: กองทัพมอนสเตอร์ + บอสใหญ่ ราชันย์อสูรเวท (Chaos Overlord)
+                spawnInterval = 2.0;
+                spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
+                spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                // บอสใหญ่ประจำด่านที่ 3!
+                spawnQueue.add(new ChaosBoss(startX + 40, laneY - 10));
             }
         }
     }
@@ -169,11 +168,16 @@ public class WaveManager {
         for (int i = 0; i < count; i++) {
             int roll = rand.nextInt(4);
             switch (roll) {
-                case 0 -> spawnQueue.add(new PlantCreeper(startX, laneY));
-                case 1 -> spawnQueue.add(new FireGolem(startX, laneY));
-                case 2 -> spawnQueue.add(new ArmoredBeast(startX, laneY));
-                case 3 -> spawnQueue.add(new SwiftImp(startX, laneY));
+                case 0 -> spawnQueue.add(new PlantCreeper(startX, staggerY(laneY)));
+                case 1 -> spawnQueue.add(new FireGolem(startX, staggerY(laneY)));
+                case 2 -> spawnQueue.add(new ArmoredBeast(startX, staggerY(laneY)));
+                case 3 -> spawnQueue.add(new SwiftImp(startX, staggerY(laneY)));
             }
+        }
+
+        // ในโหมด Endless ทุกๆ 3 เวฟ จะมี Chaos Boss ปรากฏตัว
+        if (wave % 3 == 0) {
+            spawnQueue.add(new ChaosBoss(startX + 50, laneY - 10));
         }
     }
 
@@ -229,6 +233,22 @@ public class WaveManager {
 
     public int getTotalWaves() {
         return totalWaves;
+    }
+
+    /**
+     * ดึงรายการจุดอ่อนของมอนสเตอร์ที่กำลังรอคิวเกิดในเวฟนี้ (สูงสุด 3 ตัวแรก)
+     * เพื่อให้ระบบสายพานเตรียมวัตถุดิบแก้ทางไว้ล่วงหน้า
+     */
+    public List<com.potionpanic.util.ElementType> getUpcomingWeaknesses() {
+        List<com.potionpanic.util.ElementType> list = new java.util.ArrayList<>();
+        for (Monster m : spawnQueue) {
+            com.potionpanic.util.ElementType el = m.getWeakness();
+            if (el != null && !list.contains(el)) {
+                list.add(el);
+            }
+            if (list.size() >= 3) break;
+        }
+        return list;
     }
 
     public boolean isAllCompleted() {

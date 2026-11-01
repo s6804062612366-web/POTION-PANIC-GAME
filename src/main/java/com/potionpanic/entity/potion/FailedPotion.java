@@ -1,5 +1,6 @@
 package com.potionpanic.entity.potion;
 
+import com.potionpanic.entity.VisualEffect;
 import com.potionpanic.entity.monster.Monster;
 import com.potionpanic.util.ElementType;
 
@@ -8,18 +9,28 @@ import java.util.List;
 
 /**
  * ยาล้มเหลว / ขยะ (Failed / Dud Potion)
- * เกิดจากการผสมสูตรวัตถุดิบไม่ถูกต้อง ปาแล้วเกิดเพียงควันและดาเมจเล็กน้อยมาก
+ * เกิดจากการผสมสูตรวัตถุดิบไม่ถูกต้อง ปาแล้วเกิดเพียงควันและดาเมจเล็กน้อย
  */
 public class FailedPotion extends Potion {
 
     public FailedPotion() {
         super("ยาล้มเหลว (Failed Potion)", "สูตรผิดพลาด! ดาเมจต่ำมาก ไม่มีผลสถานะ",
-                ElementType.NONE, 6, new Color(120, 110, 100), "potion_failed");
+                ElementType.NONE, 8, new Color(120, 110, 100), "potion_failed");
     }
 
     @Override
-    public void onImpact(double impactX, double impactY, List<Monster> allMonsters) {
-        double radius = 70.0;
+    public double getRadius() {
+        return 70.0;
+    }
+
+    @Override
+    public void onImpact(double impactX, double impactY, List<Monster> allMonsters, List<VisualEffect> effects) {
+        double radius = getRadius();
+        if (effects != null) {
+            effects.add(VisualEffect.createShockwave(impactX, impactY, radius, new Color(120, 110, 100)));
+            effects.add(VisualEffect.createElementalSplash(impactX, impactY, new Color(120, 110, 100)));
+        }
+
         for (Monster m : allMonsters) {
             if (m.isDead()) continue;
             double dx = (m.getX() + m.getWidth() / 2.0) - impactX;

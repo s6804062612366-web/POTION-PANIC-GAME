@@ -5,17 +5,18 @@ import com.potionpanic.entity.Renderable;
 import com.potionpanic.entity.potion.Potion;
 import com.potionpanic.util.AssetLoader;
 import com.potionpanic.util.Constants;
+import com.potionpanic.util.FontHelper;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * หม้อต้มยาเวทมนตร์ (Cauldron)
+ * หม้อต้มยาเวทมนตร์ (Cauldron) - ระบบตำรา 3 ส่วนผสม
  * ใส่ได้สูงสุด 3 วัตถุดิบ และกดปุ่ม Spacebar เพื่อต้มผสมยา
- * มีระบบ Live Preview แสดงผลยาที่จะได้ก่อนต้ม, ปุ่ม Backspace เพื่อลบของ,
- * และระบบหม้อระเบิดติดคูลดาวน์ 2 วินาทีหากต้มสูตรผิด
+ * มีระบบ Smart Recipe Helper ใบ้ส่วนผสมชิ้นที่ 3 อัตโนมัติเมื่อใส่ของครบ 2 ชิ้น
  */
 public class Cauldron implements Renderable {
     private final List<IngredientType> ingredients = new ArrayList<>();
@@ -58,15 +59,15 @@ public class Cauldron implements Renderable {
     public Potion brew() {
         if (isExploded() || ingredients.isEmpty()) return null;
 
-        // ถ้ามีวัตถุดิบไม่ถึง 2 ชิ้น หรือสูตรไม่ถูกต้อง หม้อจะระเบิดติดคูลดาวน์!
-        if (ingredients.size() < 2 || !RecipeBook.isValidRecipe(ingredients)) {
+        // ถ้ามีวัตถุดิบไม่ถึง 3 ชิ้น หรือสูตรไม่ถูกต้อง หม้อจะระเบิดติดคูลดาวน์!
+        if (ingredients.size() < 3 || !RecipeBook.isValidRecipe(ingredients)) {
             explosionTimer = explosionDuration;
             ingredients.clear();
             SoundManager.getInstance().playExplosion();
             return null;
         }
 
-        // สูตรถูกต้อง ปรุงสำเร็จ!
+        // สูตรถูกต้อง 3 ส่วนผสม ปรุงสำเร็จ!
         SoundManager.getInstance().playBoil();
         Potion potion = RecipeBook.craft(ingredients);
         ingredients.clear();
@@ -116,7 +117,7 @@ public class Cauldron implements Renderable {
             g.drawImage(cauldronImg, x, y, size, size, null);
         }
 
-        // วาดสีน้ำยาที่เปลี่ยนไปตามวัตถุดิบข้างใน
+        // วาดสีน้ำยาที่เปลี่ยนไปตามวัตถุดิบชิ้นล่าสุดข้างใน
         if (!ingredients.isEmpty() && !isExploded()) {
             IngredientType last = ingredients.get(ingredients.size() - 1);
             Color tintColor = switch (last.getElement()) {
@@ -140,18 +141,18 @@ public class Cauldron implements Renderable {
             g.fillOval(x + 15, y - 25, size - 30, 60);
 
             g.setColor(new Color(244, 67, 54));
-            g.setFont(com.potionpanic.util.FontHelper.bold(14));
+            g.setFont(FontHelper.bold(14));
             String expMsg = "หม้อระเบิด! (" + String.format("%.1f", explosionTimer) + "s)";
             FontMetrics fm = g.getFontMetrics();
             g.drawString(expMsg, x + (size - fm.stringWidth(expMsg)) / 2, y + 10);
         } else {
-            // Live Recipe Preview เหนือหม้อต้ม
+            // Live Recipe Preview & Smart Helper เหนือหม้อต้ม
             drawRecipePreview(g);
         }
 
-        // วาดช่องแสดงวัตถุดิบที่ใส่ลงไปแล้ว (ปรับเหลือ 2 ช่องสมดุลกึ่งกลางหม้อ)
+        // วาดช่องแสดงวัตถุดิบ 3 ช่อง (3 Slots)
         int slotW = 34;
-        int slotGap = 10;
+        int slotGap = 8;
         int totalSlotsW = (Constants.CAULDRON_MAX_ITEMS * slotW) + ((Constants.CAULDRON_MAX_ITEMS - 1) * slotGap);
         int badgeStartX = x + (size - totalSlotsW) / 2;
         int badgeY = y + size - 16;
@@ -170,40 +171,30 @@ public class Cauldron implements Renderable {
                     g.drawImage(icon, bx + 3, badgeY + 3, slotW - 6, slotW - 6, null);
                 }
             } else {
-                // ขีดประบางๆ แสดงช่องว่าง
                 g.setColor(new Color(80, 75, 95));
                 g.drawString(String.valueOf(i + 1), bx + slotW / 2 - 4, badgeY + slotW / 2 + 5);
             }
         }
 
-        // ป้ายคำแนะนำด้านล่างหม้อต้ม
-        g.setColor(Color.WHITE);
-        g.setFont(Constants.FONT_SMALL);
-        String label;
+        // ป้ายแจ้งเตือนเมื่อหม้อต้มระเบิด (เมื่อปกติจะไม่แสดงตัวหนังสือรกตา)
         if (isExploded()) {
-            label = "รอหม้อฟื้นสภาพ...";
             g.setColor(new Color(255, 120, 120));
-        } else if (ingredients.isEmpty()) {
-            label = "กด 1-5 ใส่ของ";
-        } else if (ingredients.size() == 1) {
-            label = "[Backspace] ลบของ";
-        } else {
-            label = "[Space] ผสม / [Backspace] ลบ";
-            g.setColor(Constants.COLOR_ACCENT_GOLD);
+            g.setFont(Constants.FONT_SMALL);
+            String label = "รอหม้อฟื้นสภาพ...";
+            FontMetrics fm = g.getFontMetrics();
+            g.drawString(label, x + (size - fm.stringWidth(label)) / 2, y + size + 34);
         }
-        FontMetrics fm = g.getFontMetrics();
-        g.drawString(label, x + (size - fm.stringWidth(label)) / 2, y + size + 34);
     }
 
     private void drawRecipePreview(Graphics2D g) {
         if (ingredients.isEmpty()) return;
 
-        int bubbleW = 220;
-        int bubbleH = 34;
+        int bubbleW = 210;
+        int bubbleH = 32;
         int bubbleX = x + (size - bubbleW) / 2;
-        int bubbleY = y - 36;
+        int bubbleY = y - 28;
 
-        if (ingredients.size() >= 2) {
+        if (ingredients.size() == 3) {
             boolean valid = RecipeBook.isValidRecipe(ingredients);
             if (valid) {
                 Potion preview = RecipeBook.previewCraft(ingredients);
@@ -213,17 +204,15 @@ public class Cauldron implements Renderable {
                 g.setStroke(new BasicStroke(2));
                 g.drawRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 10, 10);
 
-                // ภาพขวดยาตัวอย่าง
                 if (preview != null && preview.getImage() != null) {
-                    g.drawImage(preview.getImage(), bubbleX + 6, bubbleY + 3, 28, 28, null);
+                    g.drawImage(preview.getImage(), bubbleX + 6, bubbleY + 3, 26, 26, null);
                 }
 
                 g.setColor(Color.WHITE);
-                g.setFont(com.potionpanic.util.FontHelper.bold(12));
-                String name = preview != null ? preview.getName() : "ยาเวทมนตร์";
-                g.drawString(name, bubbleX + 38, bubbleY + 22);
+                g.setFont(FontHelper.bold(11));
+                String name = preview != null ? preview.getName().split(" ")[0] : "ยาเวทมนตร์";
+                g.drawString("ปรุง: " + name + " (ลุ้นระเบิด)", bubbleX + 34, bubbleY + 20);
             } else {
-                // สูตรผิดพลาด แจ้งเตือนข้อความเตือนภัย
                 g.setColor(new Color(50, 15, 15, 230));
                 g.fillRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 10, 10);
                 g.setColor(new Color(244, 67, 54));
@@ -231,19 +220,63 @@ public class Cauldron implements Renderable {
                 g.drawRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 10, 10);
 
                 g.setColor(new Color(255, 180, 180));
-                g.setFont(com.potionpanic.util.FontHelper.bold(12));
-                String errMsg = "สูตรไม่ถูกต้อง (กด Backspace)";
-                g.drawString(errMsg, bubbleX + 18, bubbleY + 22);
+                g.setFont(FontHelper.bold(11));
+                String errMsg = "สูตรไม่ตรงตำรา";
+                FontMetrics fm = g.getFontMetrics();
+                g.drawString(errMsg, bubbleX + (bubbleW - fm.stringWidth(errMsg)) / 2, bubbleY + 20);
+            }
+        } else if (ingredients.size() == 2) {
+            // ระบบ Smart Recipe Helper: ใบ้ชิ้นที่ 3 อัตโนมัติ!
+            Map<IngredientType, Potion> suggestions = RecipeBook.getSuggestionsForTwo(ingredients);
+            g.setColor(new Color(24, 28, 42, 230));
+            g.fillRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 10, 10);
+            g.setColor(new Color(100, 140, 220));
+            g.setStroke(new BasicStroke(1.5f));
+            g.drawRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 10, 10);
+
+            if (!suggestions.isEmpty()) {
+                Map.Entry<IngredientType, Potion> first = suggestions.entrySet().iterator().next();
+                IngredientType needed = first.getKey();
+                Potion resulting = first.getValue();
+
+                // วาดไอคอนของชิ้นที่ต้องการ
+                BufferedImage ingIcon = needed.getImage();
+                if (ingIcon != null) {
+                    g.drawImage(ingIcon, bubbleX + 6, bubbleY + 3, 26, 26, null);
+                }
+
+                g.setFont(FontHelper.bold(13));
+                g.setColor(Constants.COLOR_ACCENT_GOLD);
+                g.drawString("->", bubbleX + 36, bubbleY + 21);
+
+                // วาดไอคอนของขวดยาที่จะได้
+                BufferedImage potIcon = resulting.getImage();
+                if (potIcon != null) {
+                    g.drawImage(potIcon, bubbleX + 54, bubbleY + 3, 26, 26, null);
+                }
+
+                g.setFont(FontHelper.bold(12));
+                g.setColor(Color.WHITE);
+                String hintText = "ได้ " + resulting.getName().split(" ")[0];
+                g.drawString(hintText, bubbleX + 86, bubbleY + 21);
+            } else {
+                g.setFont(FontHelper.plain(11));
+                g.setColor(new Color(255, 170, 170));
+                String noRecipe = "สองชิ้นนี้ไม่มีในตำรา (กด Backspace)";
+                FontMetrics fm = g.getFontMetrics();
+                g.drawString(noRecipe, bubbleX + (bubbleW - fm.stringWidth(noRecipe)) / 2, bubbleY + 20);
             }
         } else {
             // มี 1 ชิ้น
+            int b1W = 190;
+            int b1X = x + (size - b1W) / 2;
             g.setColor(new Color(20, 20, 35, 210));
-            g.fillRoundRect(bubbleX + 20, bubbleY, bubbleW - 40, bubbleH, 8, 8);
-            g.setColor(new Color(150, 140, 180));
-            g.setFont(new Font("SansSerif", Font.PLAIN, 11));
-            String msg = "ใส่เพิ่มอีก 1 ชิ้น...";
+            g.fillRoundRect(b1X, bubbleY, b1W, bubbleH, 8, 8);
+            g.setColor(new Color(175, 165, 195));
+            g.setFont(FontHelper.plain(11));
+            String msg = "ใส่ส่วนผสมเพิ่มอีก 2 ชิ้น...";
             FontMetrics fm = g.getFontMetrics();
-            g.drawString(msg, bubbleX + (bubbleW - fm.stringWidth(msg)) / 2, bubbleY + 21);
+            g.drawString(msg, b1X + (b1W - fm.stringWidth(msg)) / 2, bubbleY + 20);
         }
     }
 }

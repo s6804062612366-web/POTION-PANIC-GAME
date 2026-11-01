@@ -1,5 +1,6 @@
 package com.potionpanic.entity.potion;
 
+import com.potionpanic.entity.VisualEffect;
 import com.potionpanic.entity.monster.Monster;
 import com.potionpanic.util.AssetLoader;
 import com.potionpanic.util.ElementType;
@@ -68,7 +69,19 @@ public abstract class Potion {
     }
 
     /**
-     * ทำงานเมื่อขวดยาตกกระทบเป้าหมาย (Polymorphism method)
+     * คืนค่ารัศมีระเบิดของยาชนิดนี้ (รวมตัวคูณอัปเกรด)
      */
-    public abstract void onImpact(double impactX, double impactY, List<Monster> allMonsters);
+    public abstract double getRadius();
+
+    /**
+     * ทำงานเมื่อขวดยาตกกระทบเป้าหมาย (Overload เพื่อความเข้ากันได้)
+     */
+    public void onImpact(double impactX, double impactY, List<Monster> allMonsters) {
+        onImpact(impactX, impactY, allMonsters, null);
+    }
+
+    /**
+     * ทำงานเมื่อขวดยาตกกระทบเป้าหมาย พร้อมสร้าง Visual Effects
+     */
+    public abstract void onImpact(double impactX, double impactY, List<Monster> allMonsters, List<VisualEffect> effects);
 }

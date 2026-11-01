@@ -34,7 +34,7 @@ public final class Constants {
     // โซน 3: โต๊ะปรุงยา, หม้อต้ม และชั้นวางยา (ด้านล่าง)
     public static final int ZONE_BOT_Y = 440;
     public static final int ZONE_BOT_HEIGHT = 280;
-    public static final int CAULDRON_MAX_ITEMS = 2; // ปรับเหลือ 2 ช่องตามคำขอของผู้ใช้ (สูตรยาใช้ 2 วัตถุดิบ)
+    public static final int CAULDRON_MAX_ITEMS = 3; // ระบบตำรา 3 ส่วนผสมสไตล์โรงเรียนเวทมนตร์ (3-Ingredient Alchemy)
     public static final int POTION_RACK_CAPACITY = 4;
 
     // สีธีมเกม

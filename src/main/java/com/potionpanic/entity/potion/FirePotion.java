@@ -1,5 +1,6 @@
 package com.potionpanic.entity.potion;
 
+import com.potionpanic.entity.VisualEffect;
 import com.potionpanic.entity.monster.Monster;
 import com.potionpanic.util.ElementType;
 import com.potionpanic.util.StatusEffect;
@@ -15,12 +16,23 @@ public class FirePotion extends Potion {
 
     public FirePotion() {
         super("ยาเพลิงกัลป์ (Fire Potion)", "ดาเมจวงกว้าง (AOE) + เผาไหม้ต่อเนื่อง",
-                ElementType.FIRE, 35, new Color(244, 67, 54), "potion_fire");
+                ElementType.FIRE, 38, new Color(244, 67, 54), "potion_fire");
     }
 
     @Override
-    public void onImpact(double impactX, double impactY, List<Monster> allMonsters) {
-        double radius = 130.0 * globalRadiusMultiplier;
+    public double getRadius() {
+        return 130.0 * globalRadiusMultiplier;
+    }
+
+    @Override
+    public void onImpact(double impactX, double impactY, List<Monster> allMonsters, List<VisualEffect> effects) {
+        double radius = getRadius();
+        if (effects != null) {
+            effects.add(VisualEffect.createShockwave(impactX, impactY, radius, new Color(255, 87, 34)));
+            effects.add(VisualEffect.createFireBurst(impactX, impactY, radius));
+            effects.add(VisualEffect.createElementalSplash(impactX, impactY, new Color(255, 87, 34)));
+        }
+
         for (Monster m : allMonsters) {
             if (m.isDead()) continue;
             double dx = (m.getX() + m.getWidth() / 2.0) - impactX;
@@ -28,11 +40,10 @@ public class FirePotion extends Potion {
             double dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist <= radius) {
-                // ดาเมจลดหลั่นตามระยะห่าง
-                double falloff = 1.0 - (dist / radius) * 0.4;
+                double falloff = 1.0 - (dist / radius) * 0.35;
                 int dmg = (int) (baseDamage * falloff);
                 m.takeDamage(dmg, element);
-                m.applyStatus(StatusEffect.BURN, 4.0); // เผาไหม้ 4 วินาที
+                m.applyStatus(StatusEffect.BURN, 4.0);
             }
         }
     }
