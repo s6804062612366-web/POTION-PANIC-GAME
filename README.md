@@ -153,14 +153,20 @@
 
 ## 7. วิธีการรันโปรแกรม
 
-### วิธีที่ 1: ผ่านสคริปต์ Terminal (แนะนำ)
+### วิธีที่ 1: รันผ่านไฟล์ Executable JAR (สะดวกที่สุด เล่นได้ทันที)
+ดาวน์โหลดไฟล์ `PotionPanic.jar` แล้วดับเบิลคลิกเพื่อเปิดเล่นเกมได้ทันที (หรือเปิดผ่าน Terminal / CMD):
+```bash
+java -jar PotionPanic.jar
+```
+
+### วิธีที่ 2: ผ่านสคริปต์ Terminal (สำหรับคอมไพล์จาก Source Code)
 เปิด Terminal ที่โฟลเดอร์โปรเจกต์ แล้วพิมพ์คำสั่ง:
 ```bash
 ./run.sh
 ```
 *(สคริปต์จะค้นหาและกำหนดค่า `JAVA_HOME` ชี้ไปยัง JDK 21 อัตโนมัติ พร้อมคอมไพล์และเปิดเกมทันที)*
 
-### วิธีที่ 2: รันผ่าน IntelliJ IDEA หรือ VS Code
+### วิธีที่ 3: รันผ่าน IntelliJ IDEA หรือ VS Code
 1. เปิดโฟลเดอร์ `POTION_PANIC_OOP` ใน IDE
 2. โปรแกรมจะตรวจพบเป็น Maven Project อัตโนมัติ
 3. ไปที่ไฟล์ `src/main/java/com/potionpanic/Main.java` แล้วกดปุ่ม **Run**
@@ -169,6 +175,7 @@
 
 ## 8. โครงสร้างโปรเจกต์และเอกสาร (Project Structure & Docs)
 
+- `PotionPanic.jar` — ตัวเกมสำเร็จรูปที่คอมไพล์แล้ว (Executable JAR) ดับเบิลคลิกเปิดเล่นได้ทันที
 - `src/main/java/com/potionpanic/` — ซอร์สโค้ดภาษา Java ทั้งหมด
 - `src/main/resources/images/` — รูปภาพและกราฟิก 2D ความละเอียดสูงในเกม
 - `pom.xml` — ไฟล์ตั้งค่า Maven Dependencies และ Maven Compiler Plugin

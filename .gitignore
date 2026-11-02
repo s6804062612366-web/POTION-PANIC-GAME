@@ -13,6 +13,7 @@ target/
 
 # Package Files #
 *.jar
+!PotionPanic.jar
 *.war
 *.nar
 *.ear
